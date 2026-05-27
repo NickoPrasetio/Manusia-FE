@@ -41,4 +41,10 @@ export const bookingApi = {
 
   cancelOrder: (id: string, token: string) =>
     apiClient.patch<Booking>(`/api/bookings/${id}/cancel`, {}, token),
+
+  getOpenNearby: (lat: number, lon: number, token: string, radiusKm = 25) =>
+    apiClient.get<Booking[]>(
+      `/api/bookings/open-nearby?lat=${lat}&lon=${lon}&radius=${radiusKm}`,
+      token,
+    ),
 };

@@ -16,6 +16,8 @@ export interface WorkerApiResponse {
   isAvailable: boolean;
   workStatus: WorkStatus;
   bio: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface WorkerCreatePayload {
@@ -41,6 +43,8 @@ function toWorker(n: WorkerApiResponse): Worker {
   return {
     ...n,
     workStatus: n.workStatus ?? 'OPEN',
+    latitude:  n.latitude,
+    longitude: n.longitude,
     reviews: [],
   };
 }
@@ -91,6 +95,24 @@ export const workerApi = {
     const form = new FormData();
     form.append('file', file);
     const data = await apiClient.upload<WorkerApiResponse>(`/api/workers/${workerId}/photo`, form, token);
+    return toWorker(data);
+  },
+
+  getMyProfile: async (token: string): Promise<WorkerApiResponse> => {
+    return apiClient.get<WorkerApiResponse>('/api/users/me/profile', token);
+  },
+
+  updateAvailability: async (
+    isAvailable: boolean,
+    token: string,
+    latitude?: number,
+    longitude?: number,
+  ): Promise<Worker> => {
+    const data = await apiClient.patch<WorkerApiResponse>(
+      '/api/users/me/availability',
+      { isAvailable, latitude, longitude },
+      token,
+    );
     return toWorker(data);
   },
 };

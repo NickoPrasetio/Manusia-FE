@@ -5,6 +5,8 @@ import { User } from '@/types';
 
 function mapError(err: unknown): AuthError {
   const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+  if (msg.includes('nik sudah terdaftar'))
+    return { code: 'EMAIL_TAKEN', message: 'NIK sudah terdaftar, gunakan akun yang sudah ada' };
   if (msg.includes('sudah terdaftar') || msg.includes('email taken'))
     return { code: 'EMAIL_TAKEN', message: 'Email sudah terdaftar' };
   if (msg.includes('password salah') || msg.includes('invalid'))
@@ -34,7 +36,7 @@ export class AuthRepository implements IAuthRepository {
       const res = await authApi.register(
         input.name, input.email, input.password,
         input.phone, input.userType as 'CUSTOMER' | 'WORKER',
-        input.birthDate, input.ktpFile,
+        input.nik, input.birthDate, input.gender, input.ktpFile,
         input.latitude, input.longitude,
       );
       return { success: true, data: { user: mapUser(res), token: res.token! } };

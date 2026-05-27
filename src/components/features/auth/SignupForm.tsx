@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  User, Mail, Lock, Phone, MapPin, Calendar,
+  User, Mail, Lock, Phone, MapPin, Calendar, CreditCard,
   Briefcase, ShoppingBag, CheckCircle2,
   AlertCircle, Loader2, RefreshCw, Upload, ScanLine,
+  Mars, Venus,
 } from 'lucide-react';
 import { useSignupForm } from '@/hooks/useSignupForm';
 import { UserType } from '@/lib/schemas/auth.schema';
@@ -19,10 +20,7 @@ import Button from '@/components/ui/Button';
 // ─── KTP Upload Card ──────────────────────────────────────────────────────────
 
 function KTPUploadCard({
-  preview,
-  ocrLoading,
-  ocrDone,
-  onChange,
+  preview, ocrLoading, ocrDone, onChange,
 }: {
   preview?: string;
   ocrLoading: boolean;
@@ -35,7 +33,7 @@ function KTPUploadCard({
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <label className="text-sm font-semibold text-gray-700">Foto KTP</label>
-        <span className="text-xs text-gray-400">Untuk verifikasi</span>
+        <span className="text-xs text-gray-400">Untuk verifikasi &amp; auto-isi data</span>
       </div>
 
       <input
@@ -43,35 +41,27 @@ function KTPUploadCard({
         type="file"
         accept="image/*"
         className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) onChange(file);
-        }}
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) onChange(f); }}
       />
 
-      {/* Preview or upload button */}
       {preview ? (
         <div className="relative rounded-2xl overflow-hidden border-2 border-blue-400 bg-gray-50">
-          <Image
-            src={preview}
-            alt="KTP Preview"
-            width={400}
-            height={250}
-            className="w-full h-40 object-cover"
-          />
-          {/* OCR overlay */}
+          <Image src={preview} alt="KTP Preview" width={400} height={250}
+            className="w-full h-40 object-cover" />
+
           {ocrLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50">
               <Loader2 size={28} className="animate-spin text-white" />
               <p className="text-xs font-semibold text-white">Membaca data KTP…</p>
             </div>
           )}
+
           {ocrDone && !ocrLoading && (
             <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-green-500 px-2 py-0.5 text-xs font-semibold text-white shadow">
-              <CheckCircle2 size={11} /> OCR selesai
+              <CheckCircle2 size={11} /> Data berhasil dibaca
             </div>
           )}
-          {/* Change button */}
+
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
@@ -91,7 +81,7 @@ function KTPUploadCard({
           </div>
           <div className="text-center">
             <p className="text-sm font-semibold text-blue-600">Upload Foto KTP</p>
-            <p className="text-xs text-blue-400 mt-0.5">Nama akan diisi otomatis via OCR</p>
+            <p className="text-xs text-blue-400 mt-0.5">Nama, tanggal lahir &amp; jenis kelamin otomatis terisi</p>
           </div>
           <div className="flex items-center gap-1.5 rounded-xl bg-blue-500 px-4 py-2 text-xs font-semibold text-white">
             <Upload size={13} /> Pilih Foto
@@ -102,28 +92,104 @@ function KTPUploadCard({
   );
 }
 
+// ─── Gender Selector ──────────────────────────────────────────────────────────
+
+function GenderSelector({
+  value, onSelect, ocrDone, error,
+}: {
+  value?: 'MALE' | 'FEMALE';
+  onSelect: (g: 'MALE' | 'FEMALE') => void;
+  ocrDone: boolean;
+  error?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <label className="text-sm font-semibold text-gray-700">Jenis Kelamin</label>
+        {ocrDone && value && (
+          <span className="flex items-center gap-1 text-xs text-green-500">
+            <CheckCircle2 size={12} /> dari KTP
+          </span>
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        {/* Laki-laki */}
+        <button
+          type="button"
+          onClick={() => onSelect('MALE')}
+          className={`flex items-center gap-3 rounded-2xl border-2 px-4 py-3 transition-all ${
+            value === 'MALE'
+              ? 'border-blue-500 bg-blue-50'
+              : 'border-gray-200 bg-white hover:border-blue-300'
+          }`}
+        >
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+            value === 'MALE' ? 'bg-blue-500' : 'bg-gray-100'
+          }`}>
+            <Mars size={18} className={value === 'MALE' ? 'text-white' : 'text-gray-500'} />
+          </div>
+          <div className="text-left">
+            <p className={`text-sm font-bold ${value === 'MALE' ? 'text-blue-600' : 'text-gray-700'}`}>
+              Laki-laki
+            </p>
+          </div>
+          {value === 'MALE' && (
+            <CheckCircle2 size={16} className="ml-auto text-blue-500" />
+          )}
+        </button>
+
+        {/* Perempuan */}
+        <button
+          type="button"
+          onClick={() => onSelect('FEMALE')}
+          className={`flex items-center gap-3 rounded-2xl border-2 px-4 py-3 transition-all ${
+            value === 'FEMALE'
+              ? 'border-pink-500 bg-pink-50'
+              : 'border-gray-200 bg-white hover:border-pink-300'
+          }`}
+        >
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+            value === 'FEMALE' ? 'bg-pink-500' : 'bg-gray-100'
+          }`}>
+            <Venus size={18} className={value === 'FEMALE' ? 'text-white' : 'text-gray-500'} />
+          </div>
+          <div className="text-left">
+            <p className={`text-sm font-bold ${value === 'FEMALE' ? 'text-pink-600' : 'text-gray-700'}`}>
+              Perempuan
+            </p>
+          </div>
+          {value === 'FEMALE' && (
+            <CheckCircle2 size={16} className="ml-auto text-pink-500" />
+          )}
+        </button>
+      </div>
+      {error && (
+        <p className="flex items-center gap-1 text-xs text-red-500">
+          <AlertCircle size={12} /> {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 // ─── UserType Selector ────────────────────────────────────────────────────────
 
 function TypeCard({
   active, icon, label, description, activeColor, onClick,
 }: {
-  active: boolean;
-  icon: React.ReactNode;
-  label: string;
-  description: string;
-  activeColor: 'blue' | 'orange';
-  onClick: () => void;
+  active: boolean; icon: React.ReactNode; label: string;
+  description: string; activeColor: 'blue' | 'orange'; onClick: () => void;
 }) {
   const c = {
     blue: {
-      border:   active ? 'border-blue-500 bg-blue-50'     : 'border-gray-200 bg-white hover:border-blue-300',
+      border:   active ? 'border-blue-500 bg-blue-50'   : 'border-gray-200 bg-white hover:border-blue-300',
       iconBg:   active ? 'bg-blue-500'   : 'bg-gray-100',
       iconText: active ? 'text-white'    : 'text-gray-500',
       label:    active ? 'text-blue-600' : 'text-gray-700',
       check:    'text-blue-500',
     },
     orange: {
-      border:   active ? 'border-orange-500 bg-orange-50'   : 'border-gray-200 bg-white hover:border-orange-300',
+      border:   active ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white hover:border-orange-300',
       iconBg:   active ? 'bg-orange-500'   : 'bg-gray-100',
       iconText: active ? 'text-white'      : 'text-gray-500',
       label:    active ? 'text-orange-600' : 'text-gray-700',
@@ -132,9 +198,7 @@ function TypeCard({
   }[activeColor];
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <button type="button" onClick={onClick}
       className={`relative flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all ${c.border}`}
     >
       {active && <CheckCircle2 size={16} className={`absolute top-2 right-2 ${c.check}`} />}
@@ -156,22 +220,12 @@ function UserTypeSelector({
     <div className="flex flex-col gap-2">
       <label className="text-sm font-semibold text-gray-700">Tipe Akun</label>
       <div className="grid grid-cols-2 gap-3">
-        <TypeCard
-          active={value === 'CUSTOMER'}
-          icon={<ShoppingBag size={20} />}
-          label="Customer"
-          description="Cari & booking jasa"
-          activeColor="blue"
-          onClick={() => onSelect('CUSTOMER')}
-        />
-        <TypeCard
-          active={value === 'WORKER'}
-          icon={<Briefcase size={20} />}
-          label="Pekerja"
-          description="Tawarkan keahlianmu"
-          activeColor="orange"
-          onClick={() => onSelect('WORKER')}
-        />
+        <TypeCard active={value === 'CUSTOMER'} icon={<ShoppingBag size={20} />}
+          label="Customer" description="Cari & booking jasa"
+          activeColor="blue" onClick={() => onSelect('CUSTOMER')} />
+        <TypeCard active={value === 'WORKER'} icon={<Briefcase size={20} />}
+          label="Pekerja" description="Tawarkan keahlianmu"
+          activeColor="orange" onClick={() => onSelect('WORKER')} />
       </div>
       {error && (
         <p className="flex items-center gap-1 text-xs text-red-500">
@@ -181,6 +235,8 @@ function UserTypeSelector({
     </div>
   );
 }
+
+// ─── Location Widget ──────────────────────────────────────────────────────────
 
 function LocationWidget({ status, latitude, longitude, errorMsg, retry }: LocationState) {
   if (status === 'requesting' || status === 'loading') {
@@ -213,7 +269,10 @@ function LocationWidget({ status, latitude, longitude, errorMsg, retry }: Locati
           <p className="text-sm font-semibold text-amber-700">Izin lokasi ditolak</p>
           <p className="text-xs text-amber-600 mt-0.5">Aktifkan izin di address bar, lalu klik Coba Lagi.</p>
         </div>
-        <button type="button" onClick={retry} className="rounded-xl bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">Coba Lagi</button>
+        <button type="button" onClick={retry}
+          className="rounded-xl bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">
+          Coba Lagi
+        </button>
       </div>
     );
   }
@@ -225,13 +284,15 @@ function LocationWidget({ status, latitude, longitude, errorMsg, retry }: Locati
           <p className="text-sm font-semibold text-red-600">Gagal mendapatkan lokasi</p>
           <p className="text-xs text-red-400">{errorMsg}</p>
         </div>
-        <button type="button" onClick={retry} className="rounded-xl bg-red-100 px-2 py-1 text-xs font-semibold text-red-600">Coba Lagi</button>
+        <button type="button" onClick={retry}
+          className="rounded-xl bg-red-100 px-2 py-1 text-xs font-semibold text-red-600">
+          Coba Lagi
+        </button>
       </div>
     );
   }
   return (
-    <button
-      type="button" onClick={retry}
+    <button type="button" onClick={retry}
       className="flex w-full items-center gap-3 rounded-2xl border-2 border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-all"
     >
       <MapPin size={18} />
@@ -256,19 +317,79 @@ export default function SignupForm() {
     userType, selectUserType,
     location,
     ktpPreview, ocrLoading, ocrDone, handleKtpChange,
+    setValue, watch,
     onSubmit,
   } = useSignupForm(handleSuccess);
+
+  const gender    = watch('gender');
+  const birthDate = watch('birthDate');
+  const nik       = watch('nik');
+
+  // Scroll ke atas saat ada error submit
+  useEffect(() => {
+    if (submitError) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [submitError]);
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
 
-      {/* ── KTP Upload (top of form) ── */}
+      {/* ── Submit Error (top, always visible) ── */}
+      {Boolean(submitError) && (
+        <div className="flex items-start gap-3 rounded-2xl border border-red-300 bg-red-50 px-4 py-3 animate-shake">
+          <AlertCircle size={18} className="shrink-0 mt-0.5 text-red-500" />
+          <p className="text-sm font-medium text-red-600">{submitError}</p>
+        </div>
+      )}
+
+      {/* ── KTP Upload ── */}
       <KTPUploadCard
         preview={ktpPreview}
         ocrLoading={ocrLoading}
         ocrDone={ocrDone}
         onChange={handleKtpChange}
       />
+
+      {/* ── NIK ── */}
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-semibold text-gray-700">NIK</label>
+          {ocrDone && nik?.length === 16 && (
+            <span className="flex items-center gap-1 text-xs text-green-500">
+              <CheckCircle2 size={12} /> dari KTP
+            </span>
+          )}
+        </div>
+        <div className="relative">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <CreditCard size={18} />
+          </span>
+          <input
+            type="text"
+            inputMode="numeric"
+            maxLength={16}
+            placeholder={ocrLoading ? 'Membaca dari KTP…' : '16 digit NIK sesuai KTP'}
+            className={`
+              w-full rounded-2xl border-2 bg-white py-3 pl-10 pr-4 text-sm text-gray-800
+              outline-none transition-all placeholder:text-gray-400 tracking-widest
+              focus:border-blue-500 focus:ring-2 focus:ring-blue-100
+              ${errors.nik ? 'border-red-400 bg-red-50' : 'border-gray-200 hover:border-gray-300'}
+            `}
+            {...register('nik')}
+          />
+          {nik && (
+            <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono ${
+              nik.length === 16 ? 'text-green-500' : 'text-gray-400'
+            }`}>
+              {nik.length}/16
+            </span>
+          )}
+        </div>
+        {errors.nik && (
+          <p className="flex items-center gap-1 text-xs text-red-500">
+            <AlertCircle size={12} /> {errors.nik.message}
+          </p>
+        )}
+      </div>
 
       {/* ── Account Type ── */}
       <UserTypeSelector
@@ -283,7 +404,10 @@ export default function SignupForm() {
           label="Nama Lengkap"
           type="text"
           placeholder={ocrLoading ? 'Membaca dari KTP…' : 'Masukkan nama lengkap'}
-          icon={ocrLoading ? <Loader2 size={18} className="animate-spin text-blue-400" /> : <User size={18} />}
+          icon={ocrLoading
+            ? <Loader2 size={18} className="animate-spin text-blue-400" />
+            : <User size={18} />
+          }
           error={errors.name?.message}
           autoComplete="name"
           {...register('name')}
@@ -297,13 +421,21 @@ export default function SignupForm() {
 
       {/* ── Tanggal Lahir ── */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-semibold text-gray-700">Tanggal Lahir</label>
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-semibold text-gray-700">Tanggal Lahir</label>
+          {ocrDone && birthDate && (
+            <span className="flex items-center gap-1 text-xs text-green-500">
+              <CheckCircle2 size={12} /> dari KTP
+            </span>
+          )}
+        </div>
         <div className="relative">
           <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
             <Calendar size={18} />
           </span>
           <input
             type="date"
+            suppressHydrationWarning
             max={new Date().toISOString().split('T')[0]}
             className={`
               w-full rounded-2xl border-2 bg-white py-3 pl-10 pr-4 text-sm text-gray-800
@@ -320,6 +452,14 @@ export default function SignupForm() {
           </p>
         )}
       </div>
+
+      {/* ── Jenis Kelamin ── */}
+      <GenderSelector
+        value={gender}
+        onSelect={(g) => setValue('gender', g, { shouldValidate: true })}
+        ocrDone={ocrDone}
+        error={errors.gender?.message}
+      />
 
       <Input
         label="Email" type="email" placeholder="email@contoh.com"
@@ -352,12 +492,6 @@ export default function SignupForm() {
         </div>
         <LocationWidget {...location} />
       </div>
-
-      {submitError && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-          <p className="text-sm text-red-600">{submitError}</p>
-        </div>
-      )}
 
       <Button type="submit" loading={isSubmitting} fullWidth size="lg" className="mt-2">
         Daftar

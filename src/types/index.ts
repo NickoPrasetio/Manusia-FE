@@ -62,7 +62,29 @@ export interface Worker {
   isAvailable: boolean;
   workStatus: WorkStatus;
   bio: string;
+  latitude?: number;
+  longitude?: number;
   reviews: Review[];
+}
+
+export type JobCategory = 'TASK' | 'PROJECT' | 'EVENT';
+export type JobStatus   = 'OPEN' | 'CLOSED';
+
+export interface NearbyJob {
+  id: string;
+  customerId: string;
+  customerName: string;
+  title: string;
+  description: string;
+  budgetPerDay: number;
+  todoList: string[];
+  durationDays: number;
+  city: string;
+  latitude: number;
+  longitude: number;
+  category: JobCategory;
+  status: JobStatus;
+  createdAt: string;
 }
 
 export interface BookingRequest {

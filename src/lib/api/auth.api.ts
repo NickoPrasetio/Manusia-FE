@@ -24,7 +24,9 @@ export const authApi = {
     password: string,
     phone: string,
     userType: UserType,
+    nik: string,
     birthDate: string,
+    gender: string,
     ktpFile?: File,
     latitude?: number,
     longitude?: number,
@@ -35,7 +37,9 @@ export const authApi = {
     form.append('password', password);
     form.append('phone', phone);
     form.append('userType', userType);
+    form.append('nik', nik);
     form.append('birthDate', birthDate);
+    form.append('gender', gender);
     if (ktpFile) form.append('ktp', ktpFile);
     if (latitude  !== undefined) form.append('latitude',  String(latitude));
     if (longitude !== undefined) form.append('longitude', String(longitude));
