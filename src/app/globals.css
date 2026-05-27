@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+html,
+body {
+  max-width: 430px;
+  margin: 0 auto;
+  background: #f8fafc;
+}
+
+.app-wrapper {
+  min-height: 100dvh;
+  background: white;
+}
+
+* {
+  box-sizing: border-box;
+}
