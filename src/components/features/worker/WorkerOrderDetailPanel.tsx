@@ -47,7 +47,7 @@ export default function WorkerOrderDetailPanel({ order, onClose }: Props) {
       />
 
       {/* Panel */}
-      <div className="fixed inset-x-0 bottom-0 z-50 flex flex-col max-h-[90dvh] bg-white rounded-t-3xl shadow-2xl">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 flex flex-col max-h-[90dvh] bg-white rounded-t-3xl shadow-2xl">
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full bg-gray-200" />
