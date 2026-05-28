@@ -14,14 +14,25 @@ export interface CreateJobPayload {
   category: JobCategory;
 }
 
+/** Paginated response for GET /api/jobs/nearby */
+export interface NearbyJobsResponse {
+  jobs: NearbyJob[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+}
+
 export const jobApi = {
   /**
-   * Fetch open jobs near a location.
+   * Fetch open jobs near a location — paginated.
    * @param lat      Worker latitude
    * @param lon      Worker longitude
    * @param token    JWT
    * @param radiusKm Search radius in km (default 50)
    * @param category Filter by category — omit or '' for all
+   * @param page     Page number 1-based (default 1)
+   * @param limit    Items per page, max 50 (default 10)
    */
   getNearby: (
     lat: number,
@@ -29,14 +40,18 @@ export const jobApi = {
     token: string,
     radiusKm = 50,
     category?: JobCategory | '',
-  ): Promise<NearbyJob[]> => {
+    page = 1,
+    limit = 10,
+  ): Promise<NearbyJobsResponse> => {
     const params = new URLSearchParams({
       lat: String(lat),
       lon: String(lon),
       radius: String(radiusKm),
+      page: String(page),
+      limit: String(limit),
     });
     if (category) params.set('category', category);
-    return apiClient.get<NearbyJob[]>(`/api/jobs/nearby?${params}`, token);
+    return apiClient.get<NearbyJobsResponse>(`/api/jobs/nearby?${params}`, token);
   },
 
   getById: (id: string, token: string): Promise<NearbyJob> =>

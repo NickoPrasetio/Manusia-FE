@@ -1,13 +1,16 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/authStore';
-import { jobApi } from '@/lib/api/job.api';
+import { jobApi, NearbyJobsResponse } from '@/lib/api/job.api';
 import { dummyNearbyJobs } from '@/data/dummyNearbyJobs';
 import { NearbyJob, JobCategory } from '@/types';
 
-/** Haversine distance in km between two lat/lon points. */
+const PAGE_SIZE = 10;
+
+// ── Haversine ──────────────────────────────────────────────────────────────
+/** Distance in km between two lat/lon points. */
 export function distanceKm(
   lat1: number, lon1: number,
   lat2: number, lon2: number,
@@ -28,60 +31,123 @@ export interface NearbyJobWithDistance extends NearbyJob {
   distKm: number;
 }
 
+// ── Dummy fallback ─────────────────────────────────────────────────────────
+/** Paginates dummy data to mimic the backend NearbyJobsResponse format. */
+function paginateDummy(
+  all: NearbyJob[],
+  category: JobCategory | '',
+  page: number,
+): NearbyJobsResponse {
+  const filtered = category ? all.filter((j) => j.category === category) : all;
+  const start = (page - 1) * PAGE_SIZE;
+  const jobs = filtered.slice(start, start + PAGE_SIZE);
+  return {
+    jobs,
+    total: filtered.length,
+    page,
+    limit: PAGE_SIZE,
+    hasMore: start + PAGE_SIZE < filtered.length,
+  };
+}
+
+// ── Hook ───────────────────────────────────────────────────────────────────
 /**
- * Fetch nearby open jobs from the backend and attach distance.
- * Falls back to dummy data when:
- *  - worker location is unavailable (query disabled), OR
- *  - backend returns an empty array
+ * Infinite-scroll hook for nearby open jobs.
  *
- * @param radiusKm  Search radius passed to the backend (default 50)
- * @param category  Optional category filter: 'TASK' | 'PROJECT' | 'EVENT' | ''
+ * Strategy:
+ *  1. Worker has location + token  → call backend (paginated)
+ *  2. Backend returns 0 items on p.1, or network error  → fall back to dummy
+ *  3. No token / no location  → paginate dummy data client-side
+ *
+ * @param radiusKm  Search radius passed to backend (default 50)
+ * @param category  Filter: 'TASK' | 'PROJECT' | 'EVENT' | '' (all)
  */
 export function useNearbyJobs(
   radiusKm = 50,
   category?: JobCategory | '',
 ): {
-  jobs: NearbyJobWithDistance[];
-  isLoading: boolean;
-  isError: boolean;
-  hasLocation: boolean;
+  jobs:           NearbyJobWithDistance[];
+  total:          number;
+  isLoading:      boolean;
+  isFetchingMore: boolean;
+  isError:        boolean;
+  hasMore:        boolean;
+  fetchMore:      () => void;
+  hasLocation:    boolean;
 } {
   const { token, user } = useAuthStore();
   const lat = user?.latitude;
   const lon = user?.longitude;
   const hasLocation = lat != null && lon != null;
 
-  const query = useQuery({
-    queryKey: ['nearby-jobs', lat, lon, radiusKm, category ?? ''],
-    queryFn:  () => jobApi.getNearby(lat!, lon!, token!, radiusKm, category),
-    enabled:  !!token && hasLocation,
+  const query = useInfiniteQuery({
+    // Key includes lat/lon so query resets when location is enabled/disabled
+    queryKey: ['nearby-jobs', lat ?? null, lon ?? null, radiusKm, category ?? ''],
+
+    queryFn: async ({ pageParam }) => {
+      const page = pageParam as number;
+
+      // No token or no location → immediate dummy response (no network call)
+      if (!token || !hasLocation) {
+        return paginateDummy(dummyNearbyJobs, category ?? '', page);
+      }
+
+      try {
+        const result = await jobApi.getNearby(
+          lat!, lon!, token, radiusKm, category, page, PAGE_SIZE,
+        );
+        // Backend returned nothing on first page → fall back to dummy
+        if (page === 1 && result.jobs.length === 0) {
+          return paginateDummy(dummyNearbyJobs, category ?? '', page);
+        }
+        return result;
+      } catch {
+        // Network / backend error → fall back to dummy
+        return paginateDummy(dummyNearbyJobs, category ?? '', page);
+      }
+    },
+
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: NearbyJobsResponse) =>
+      lastPage.hasMore ? lastPage.page + 1 : undefined,
+
+    // Always run once token is available — location handled inside queryFn
+    enabled: !!token,
     staleTime: 60_000,
-    refetchInterval: 120_000,
   });
 
+  // Flatten all loaded pages, deduplicate by id, then attach distance.
+  // Dedup guards against offset-pagination drift on the backend returning
+  // the same row on two different pages.
   const jobs = useMemo<NearbyJobWithDistance[]>(() => {
-    // Use backend data when available and non-empty
-    const source: NearbyJob[] =
-      query.data && query.data.length > 0 ? query.data : dummyNearbyJobs;
+    const allJobs = query.data?.pages.flatMap((p) => p.jobs) ?? [];
+    const seen = new Set<string>();
+    return allJobs
+      .filter((j) => {
+        if (seen.has(j.id)) return false;
+        seen.add(j.id);
+        return true;
+      })
+      .map((j) => ({
+        ...j,
+        distKm: hasLocation
+          ? distanceKm(lat!, lon!, j.latitude, j.longitude)
+          : 0,
+      }));
+  }, [query.data, lat, lon, hasLocation]);
 
-    // Filter by category if one is selected
-    const filtered = category
-      ? source.filter((j) => j.category === category)
-      : source;
-
-    // Attach distance — 0 when no location (distance badge hidden in card)
-    return filtered.map((j) => ({
-      ...j,
-      distKm: hasLocation
-        ? distanceKm(lat!, lon!, j.latitude, j.longitude)
-        : 0,
-    }));
-  }, [query.data, lat, lon, hasLocation, category]);
+  // Total comes from first-page response
+  const total = query.data?.pages[0]?.total ?? 0;
 
   return {
     jobs,
-    isLoading:   query.isLoading && hasLocation,
-    isError:     query.isError,
+    total,
+    // Show spinner only on initial page load when there is real backend fetch
+    isLoading:      query.isLoading && hasLocation,
+    isFetchingMore: query.isFetchingNextPage,
+    isError:        query.isError,
+    hasMore:        query.hasNextPage ?? false,
+    fetchMore:      query.fetchNextPage,
     hasLocation,
   };
 }

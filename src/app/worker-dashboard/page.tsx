@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Briefcase, LogOut, User, ClipboardList, Loader2, AlertCircle,
@@ -99,8 +99,38 @@ function WorkerDashboardContent() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
-  const { jobs: nearbyJobs, isLoading: nearbyLoading, hasLocation } = useNearbyJobs(50, activeCategory);
+  const {
+    jobs: nearbyJobs,
+    total: nearbyTotal,
+    isLoading: nearbyLoading,
+    isFetchingMore,
+    hasMore,
+    fetchMore,
+    hasLocation,
+  } = useNearbyJobs(50, activeCategory);
   const clientHasLocation = mounted && hasLocation;
+
+  // ── Infinite scroll sentinel ──────────────────────────────────────────────
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // Deps include nearbyJobs.length so the observer reconnects after every page
+  // loads.  On reconnect, IntersectionObserver immediately fires with the
+  // current intersection state — if sentinel is still in-view, fetchMore() is
+  // called even though the element never "moved".
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isFetchingMore && !nearbyLoading) {
+          fetchMore();
+        }
+      },
+      { rootMargin: '200px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [nearbyJobs.length, hasMore, isFetchingMore, nearbyLoading, fetchMore]);
 
   return (
     <>
@@ -304,9 +334,9 @@ function WorkerDashboardContent() {
           <div className="flex items-center gap-2 mb-3">
             <Navigation size={16} className="text-emerald-500" />
             <h2 className="font-bold text-gray-900 text-sm">Pekerjaan di Sekitar</h2>
-            {nearbyJobs.length > 0 && (
+            {nearbyTotal > 0 && (
               <span className="ml-auto text-[11px] bg-emerald-100 text-emerald-600 font-semibold px-2 py-0.5 rounded-full">
-                {nearbyJobs.length} tersedia
+                {nearbyTotal} tersedia
               </span>
             )}
           </div>
@@ -378,6 +408,21 @@ function WorkerDashboardContent() {
                 onClick={() => router.push(`/worker/jobs/${job.id}`)}
               />
             ))}
+
+            {/* ── Infinite scroll sentinel ─────────────────────────────── */}
+            <div ref={sentinelRef} className="flex items-center justify-center py-3">
+              {isFetchingMore && (
+                <div className="flex items-center gap-2 text-gray-400">
+                  <Loader2 size={16} className="animate-spin" />
+                  <span className="text-xs font-medium">Memuat pekerjaan lainnya…</span>
+                </div>
+              )}
+              {!hasMore && nearbyJobs.length > 0 && !nearbyLoading && (
+                <p className="text-[11px] text-gray-300 font-medium">
+                  — Semua {nearbyTotal} pekerjaan telah dimuat —
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>

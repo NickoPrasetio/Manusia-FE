@@ -2,10 +2,11 @@ import { NearbyJob } from '@/types';
 
 /**
  * Dummy/seed data for nearby jobs (used for UI preview & local dev seeding).
+ * 20 items total — enough to demo 2 pages of infinite scroll (page size 10).
  * GPS coordinates are real locations around Jabodetabek.
  */
 export const dummyNearbyJobs: NearbyJob[] = [
-  // ── TASK ──────────────────────────────────────────────────────────────────
+  // ── TASK (8 items) ────────────────────────────────────────────────────────
   {
     id: 'job-001',
     customerId: 'cust-001',
@@ -98,8 +99,100 @@ export const dummyNearbyJobs: NearbyJob[] = [
     status: 'OPEN',
     createdAt: '2026-05-23T10:00:00Z',
   },
+  {
+    id: 'job-011',
+    customerId: 'cust-011',
+    customerName: 'Rini Kurniawati',
+    title: 'Pemasangan Wallpaper 2 Kamar Tidur',
+    description:
+      'Butuh tenaga profesional untuk pasang wallpaper di 2 kamar tidur. Material wallpaper sudah tersedia. Permukaan dinding dalam kondisi baik.',
+    budgetPerDay: 290_000,
+    todoList: [
+      'Bersihkan dan ratakan permukaan dinding',
+      'Potong wallpaper sesuai ukuran ruangan',
+      'Aplikasikan lem wallpaper secara merata',
+      'Pasang wallpaper dengan rapi tanpa gelembung',
+      'Rapikan sudut dan pinggiran',
+    ],
+    durationDays: 2,
+    city: 'Jakarta Utara',
+    latitude: -6.1481,
+    longitude: 106.8650,
+    category: 'TASK',
+    status: 'OPEN',
+    createdAt: '2026-05-24T08:30:00Z',
+  },
+  {
+    id: 'job-012',
+    customerId: 'cust-012',
+    customerName: 'Bambang Priyono',
+    title: 'Perbaikan Kusen Pintu dan Jendela',
+    description:
+      'Beberapa kusen pintu kayu mulai lapuk dan jendela engselnya longgar. Perlu penggantian kayu yang rusak dan pemasangan engsel baru.',
+    budgetPerDay: 320_000,
+    todoList: [
+      'Cek kondisi semua kusen pintu dan jendela',
+      'Ganti bagian kayu yang lapuk',
+      'Ganti engsel jendela yang longgar (4 buah)',
+      'Amplas dan cat ulang kusen',
+      'Pastikan semua pintu dan jendela menutup rapat',
+    ],
+    durationDays: 3,
+    city: 'Depok',
+    latitude: -6.3728,
+    longitude: 106.8317,
+    category: 'TASK',
+    status: 'OPEN',
+    createdAt: '2026-05-24T11:00:00Z',
+  },
+  {
+    id: 'job-013',
+    customerId: 'cust-013',
+    customerName: 'Wulandari Putri',
+    title: 'Instalasi AC 2 Unit Split',
+    description:
+      'Pemasangan 2 unit AC split baru di ruang tamu dan kamar utama. Unit AC sudah tersedia di lokasi, butuh tenaga instalasi beserta kabel dan pipa freon.',
+    budgetPerDay: 450_000,
+    todoList: [
+      'Pasang braket unit indoor & outdoor',
+      'Instalasi unit indoor ruang tamu',
+      'Instalasi unit indoor kamar utama',
+      'Tarik pipa freon dan kabel power',
+      'Isi freon dan uji coba kedua unit',
+    ],
+    durationDays: 1,
+    city: 'Bogor',
+    latitude: -6.5606,
+    longitude: 106.7893,
+    category: 'TASK',
+    status: 'OPEN',
+    createdAt: '2026-05-25T09:00:00Z',
+  },
+  {
+    id: 'job-014',
+    customerId: 'cust-014',
+    customerName: 'Eko Prasetyo',
+    title: 'Deep Cleaning Rumah Pasca Renovasi',
+    description:
+      'Rumah baru selesai renovasi dan butuh dibersihkan total dari debu semen, cat, dan kotoran. Luas sekitar 120 m², 2 lantai.',
+    budgetPerDay: 350_000,
+    todoList: [
+      'Sapu dan vacuum debu semen di semua ruangan',
+      'Bersihkan bekas cat di lantai dan kaca',
+      'Pel lantai dengan cairan pembersih khusus',
+      'Bersihkan kamar mandi dan dapur secara menyeluruh',
+      'Lap semua jendela dan kaca hingga bersih',
+    ],
+    durationDays: 2,
+    city: 'Serpong',
+    latitude: -6.3029,
+    longitude: 106.6519,
+    category: 'TASK',
+    status: 'OPEN',
+    createdAt: '2026-05-25T14:00:00Z',
+  },
 
-  // ── PROJECT ────────────────────────────────────────────────────────────────
+  // ── PROJECT (8 items) ─────────────────────────────────────────────────────
   {
     id: 'job-003',
     customerId: 'cust-003',
@@ -194,8 +287,100 @@ export const dummyNearbyJobs: NearbyJob[] = [
     status: 'OPEN',
     createdAt: '2026-05-21T08:30:00Z',
   },
+  {
+    id: 'job-015',
+    customerId: 'cust-015',
+    customerName: 'Hartono Susilo',
+    title: 'Pembangunan Carport Baja Ringan',
+    description:
+      'Pembuatan carport baja ringan dengan atap polycarbonate ukuran 5×6 meter. Material baja ringan dan polycarbonate disediakan. Butuh tim berpengalaman.',
+    budgetPerDay: 550_000,
+    todoList: [
+      'Pasang tiang kolom carport (4 titik)',
+      'Rangkai rangka atap baja ringan',
+      'Pasang reng dan penutup atap polycarbonate',
+      'Las dan kencangkan semua sambungan',
+      'Cat anti karat seluruh struktur baja',
+    ],
+    durationDays: 3,
+    city: 'Bekasi',
+    latitude: -6.2714,
+    longitude: 107.0156,
+    category: 'PROJECT',
+    status: 'OPEN',
+    createdAt: '2026-05-25T08:00:00Z',
+  },
+  {
+    id: 'job-016',
+    customerId: 'cust-016',
+    customerName: 'Nita Kusumawati',
+    title: 'Renovasi Dapur Minimalis Modern',
+    description:
+      'Renovasi dapur lama menjadi konsep minimalis modern. Ganti kabinet, pasang backsplash keramik, dan upgrade sistem ventilasi dapur.',
+    budgetPerDay: 650_000,
+    todoList: [
+      'Bongkar kabinet lama',
+      'Pasang kabinet bawah dan atas baru',
+      'Pasang backsplash keramik 3×1 m',
+      'Instalasi cooker hood baru',
+      'Pasang lampu kabinet dan finishing',
+    ],
+    durationDays: 5,
+    city: 'Tangerang',
+    latitude: -6.2027,
+    longitude: 106.6394,
+    category: 'PROJECT',
+    status: 'OPEN',
+    createdAt: '2026-05-25T10:30:00Z',
+  },
+  {
+    id: 'job-017',
+    customerId: 'cust-017',
+    customerName: 'Kurniawan Hadi',
+    title: 'Pemasangan Kanopi Polycarbonate',
+    description:
+      'Pemasangan kanopi di area teras depan dan samping rumah. Total luas ±20 m². Rangka besi hollow, atap polycarbonate bening.',
+    budgetPerDay: 480_000,
+    todoList: [
+      'Ukur dan marking area pemasangan',
+      'Pasang angkur ke dinding',
+      'Rangkai struktur besi hollow',
+      'Pasang lembaran polycarbonate',
+      'Seal semua pinggiran dan uji kebocoran',
+    ],
+    durationDays: 2,
+    city: 'Jakarta Selatan',
+    latitude: -6.2874,
+    longitude: 106.8340,
+    category: 'PROJECT',
+    status: 'OPEN',
+    createdAt: '2026-05-26T09:00:00Z',
+  },
+  {
+    id: 'job-018',
+    customerId: 'cust-018',
+    customerName: 'Meilani Pratiwi',
+    title: 'Pembuatan Taman Depan Rumah',
+    description:
+      'Membuat taman kecil di halaman depan rumah seluas ±15 m². Konsep taman tropis dengan batu alam, rumput, dan tanaman hijau.',
+    budgetPerDay: 400_000,
+    todoList: [
+      'Bersihkan dan rata-kan lahan',
+      'Pasang batu alam sebagai border',
+      'Tanam rumput jepang',
+      'Tanam tanaman hias sesuai desain',
+      'Pasang sistem drainase sederhana',
+    ],
+    durationDays: 3,
+    city: 'Karawang',
+    latitude: -6.3052,
+    longitude: 107.3195,
+    category: 'PROJECT',
+    status: 'OPEN',
+    createdAt: '2026-05-26T11:00:00Z',
+  },
 
-  // ── EVENT ──────────────────────────────────────────────────────────────────
+  // ── EVENT (4 items) ───────────────────────────────────────────────────────
   {
     id: 'job-004',
     customerId: 'cust-004',
@@ -241,5 +426,51 @@ export const dummyNearbyJobs: NearbyJob[] = [
     category: 'EVENT',
     status: 'OPEN',
     createdAt: '2026-05-23T13:00:00Z',
+  },
+  {
+    id: 'job-019',
+    customerId: 'cust-019',
+    customerName: 'Sudarsono Wibowo',
+    title: 'Sound System Acara Perpisahan Sekolah',
+    description:
+      'Sewa dan operator sound system untuk acara perpisahan sekolah di aula. Kapasitas 300 orang. Butuh 2 hari (H-1 setup + hari H operasional).',
+    budgetPerDay: 750_000,
+    todoList: [
+      'Survey dan perencanaan penempatan speaker',
+      'Setup sound system hari H-1',
+      'Sound check dengan panitia',
+      'Operasikan sound system selama acara',
+      'Bongkar dan kemas peralatan setelah acara',
+    ],
+    durationDays: 2,
+    city: 'Jakarta Timur',
+    latitude: -6.2482,
+    longitude: 106.9110,
+    category: 'EVENT',
+    status: 'OPEN',
+    createdAt: '2026-05-26T08:00:00Z',
+  },
+  {
+    id: 'job-020',
+    customerId: 'cust-020',
+    customerName: 'Anita Setyowati',
+    title: 'Dokumentasi Foto & Video Pesta Ulang Tahun',
+    description:
+      'Butuh fotografer dan videografer untuk pesta ulang tahun anak usia 7 tahun. Acara berlangsung 4 jam di rumah. Output: 200 foto edit + video highlight 3 menit.',
+    budgetPerDay: 900_000,
+    todoList: [
+      'Briefing konsep dan mood board bersama klien',
+      'Dokumentasi persiapan dan dekorasi',
+      'Foto dan video selama acara berlangsung',
+      'Editing foto dan video pasca acara',
+      'Kirim hasil dalam 3 hari kerja',
+    ],
+    durationDays: 1,
+    city: 'Jakarta Barat',
+    latitude: -6.1674,
+    longitude: 106.7593,
+    category: 'EVENT',
+    status: 'OPEN',
+    createdAt: '2026-05-26T10:00:00Z',
   },
 ];
