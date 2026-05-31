@@ -3,8 +3,6 @@ export type WorkStatus = 'OPEN' | 'CLOSED' | 'BOOKED';
 export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
 export type PaymentMethod = 'CASH';
 
-export type UserType = 'CUSTOMER' | 'WORKER';
-
 export interface Booking {
   id: string;
   workerId: string;
@@ -32,7 +30,6 @@ export interface User {
   phone?: string;
   avatar?: string;
   role?: string;
-  userType?: UserType;
   latitude?: number;
   longitude?: number;
 }
@@ -62,6 +59,8 @@ export interface Worker {
   isAvailable: boolean;
   workStatus: WorkStatus;
   bio: string;
+  gender?: string;
+  birthPlace?: string;
   latitude?: number;
   longitude?: number;
   reviews: Review[];

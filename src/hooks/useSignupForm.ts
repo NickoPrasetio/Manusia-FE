@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuthStore } from '@/store/authStore';
-import { signupSchema, SignupFormValues, UserType } from '@/lib/schemas/auth.schema';
+import { signupSchema, SignupFormValues } from '@/lib/schemas/auth.schema';
 import { signupUseCase } from '@/data/auth';
 import { useLocation } from './useLocation';
 
@@ -117,12 +117,6 @@ export function useSignupForm(onSuccess: () => void) {
     formState: { errors, isSubmitting },
   } = useForm<SignupFormValues>({ resolver: zodResolver(signupSchema) });
 
-  const userType = watch('userType');
-
-  function selectUserType(type: UserType) {
-    setValue('userType', type, { shouldValidate: true });
-  }
-
   async function handleKtpChange(file: File) {
     setKtpFile(file);
     setOcrDone(false);
@@ -187,7 +181,6 @@ export function useSignupForm(onSuccess: () => void) {
       email:     values.email,
       password:  values.password,
       phone:     values.phone,
-      userType:  values.userType,
       birthDate: values.birthDate,
       gender:    values.gender,
       ktpFile,
@@ -204,7 +197,6 @@ export function useSignupForm(onSuccess: () => void) {
 
   return {
     register, watch, errors, isSubmitting, submitError,
-    userType, selectUserType,
     location,
     ktpFile, ktpPreview, ocrLoading, ocrDone, handleKtpChange,
     setValue,

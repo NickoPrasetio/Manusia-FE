@@ -1,11 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useRef, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Star, MessageSquare, Loader2 } from 'lucide-react';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { ArrowLeft, Star, MessageSquare, Loader2, ArrowUpDown } from 'lucide-react';
 import AuthGuard from '@/components/providers/AuthGuard';
 import { useAuthStore } from '@/store/authStore';
-import { reviewApi, ReviewApiResponse } from '@/lib/api/review.api';
+import { reviewApi, ReviewApiResponse, RatingDist } from '@/lib/api/review.api';
+
+type SortOption = 'recent' | 'highest' | 'lowest';
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'recent',  label: 'Terbaru'           },
+  { value: 'highest', label: 'Rating Tertinggi'  },
+  { value: 'lowest',  label: 'Rating Terendah'   },
+];
+
+const LIMIT = 10;
 
 // ── Star renderer ─────────────────────────────────────────────────────────────
 
@@ -33,7 +44,7 @@ function ReviewCard({ review }: { review: ReviewApiResponse }) {
     .join('')
     .toUpperCase();
 
-  const dateLabel = new Date(review.date).toLocaleDateString('id-ID', {
+  const dateLabel = new Date(review.date + 'T00:00:00').toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -77,17 +88,16 @@ function ReviewCard({ review }: { review: ReviewApiResponse }) {
 
 // ── Summary bar ───────────────────────────────────────────────────────────────
 
-function RatingSummary({ reviews }: { reviews: ReviewApiResponse[] }) {
-  if (reviews.length === 0) return null;
-
-  const avg   = reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
-  const total = reviews.length;
-
-  // distribution
-  const dist = [5, 4, 3, 2, 1].map((star) => ({
-    star,
-    count: reviews.filter((r) => r.rating === star).length,
-  }));
+function RatingSummary({
+  avg,
+  total,
+  dist,
+}: {
+  avg: number;
+  total: number;
+  dist: RatingDist[];
+}) {
+  if (total === 0) return null;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 flex gap-5 items-center">
@@ -120,31 +130,68 @@ function RatingSummary({ reviews }: { reviews: ReviewApiResponse[] }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 function MyReviewsContent() {
-  const user  = useAuthStore((s) => s.user);
-  const [reviews,   setReviews]   = useState<ReviewApiResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isError,   setIsError]   = useState(false);
+  const user     = useAuthStore((s) => s.user);
+  const sentinel = useRef<HTMLDivElement>(null);
+  const [sortBy, setSortBy] = useState<SortOption>('recent');
 
+  const {
+    data,
+    isLoading,
+    isError,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['my-reviews-page', user?.id],
+    queryFn: ({ pageParam }) =>
+      reviewApi.getByWorkerPage(user!.id, pageParam as number, LIMIT),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) =>
+      lastPage.last ? undefined : lastPage.page + 1,
+    enabled: !!user?.id,
+  });
+
+  // Flatten pages, dedup by id, then sort
+  const reviews = useMemo(() => {
+    const seen = new Set<string>();
+    const flat = (data?.pages.flatMap((p) => p.reviews) ?? []).filter((r) => {
+      if (seen.has(r.id)) return false;
+      seen.add(r.id);
+      return true;
+    });
+    if (sortBy === 'highest') return [...flat].sort((a, b) => b.rating - a.rating || b.date.localeCompare(a.date));
+    if (sortBy === 'lowest')  return [...flat].sort((a, b) => a.rating - b.rating || b.date.localeCompare(a.date));
+    // 'recent' — default order from backend (already newest first)
+    return flat;
+  }, [data?.pages, sortBy]);
+
+  // Stats come from the first page (always accurate — full aggregate)
+  const stats = data?.pages[0];
+
+  // IntersectionObserver sentinel
   useEffect(() => {
-    if (!user?.id) return;
-    setIsLoading(true);
-    reviewApi
-      .getByWorker(user.id)
-      .then((data) => {
-        // reviewApi returns Review[], but we need ReviewApiResponse[] - cast safely
-        setReviews(data as unknown as ReviewApiResponse[]);
-      })
-      .catch(() => setIsError(true))
-      .finally(() => setIsLoading(false));
-  }, [user?.id]);
+    if (!sentinel.current) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    obs.observe(sentinel.current);
+    return () => obs.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <div className="flex flex-col gap-4 px-4 py-4 pb-12">
 
-      {/* Summary */}
-      {!isLoading && !isError && <RatingSummary reviews={reviews} />}
+      {/* Summary — shown once data is ready */}
+      {stats && stats.total > 0 && (
+        <RatingSummary avg={stats.avgRating} total={stats.total} dist={stats.dist} />
+      )}
 
-      {/* Loading */}
+      {/* Loading skeleton */}
       {isLoading && (
         <div className="flex items-center justify-center gap-2 py-16 text-gray-400">
           <Loader2 size={20} className="animate-spin" />
@@ -161,7 +208,7 @@ function MyReviewsContent() {
         </div>
       )}
 
-      {/* Empty */}
+      {/* Empty state */}
       {!isLoading && !isError && reviews.length === 0 && (
         <div className="flex flex-col items-center gap-3 py-16 text-center">
           <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center">
@@ -179,15 +226,48 @@ function MyReviewsContent() {
       {/* Review list */}
       {!isLoading && !isError && reviews.length > 0 && (
         <>
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-            Semua Ulasan
-          </p>
+          {/* Sorter */}
+          <div className="flex items-center gap-2">
+            <ArrowUpDown size={13} className="text-gray-400 shrink-0" />
+            <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+              {SORT_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setSortBy(opt.value)}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all
+                    ${sortBy === opt.value
+                      ? 'bg-blue-500 text-white shadow-sm'
+                      : 'bg-white text-gray-500 border border-gray-200 hover:border-blue-300 hover:text-blue-500'
+                    }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="flex flex-col gap-3">
             {reviews.map((r) => (
               <ReviewCard key={r.id} review={r} />
             ))}
           </div>
         </>
+      )}
+
+      {/* Sentinel for infinite scroll */}
+      <div ref={sentinel} className="h-4" />
+
+      {/* Loading more indicator */}
+      {isFetchingNextPage && (
+        <div className="flex items-center justify-center gap-2 py-4 text-gray-400">
+          <Loader2 size={16} className="animate-spin" />
+          <span className="text-xs">Memuat lebih banyak…</span>
+        </div>
+      )}
+
+      {/* End of list */}
+      {!hasNextPage && reviews.length > 0 && !isLoading && (
+        <p className="text-center text-xs text-gray-300 py-2">— Semua ulasan sudah ditampilkan —</p>
       )}
     </div>
   );

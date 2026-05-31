@@ -30,7 +30,6 @@ export default function NearbyJobsPage() {
           <NearbyJobsList />
         </div>
 
-        {/* FAB — only visible for CUSTOMER */}
         <PostJobButton />
 
       </main>

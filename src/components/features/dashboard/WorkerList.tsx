@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, SlidersHorizontal, RefreshCw } from 'lucide-react';
 import { useWorkerStore } from '@/store/workerStore';
 import { useWorkersInfiniteQuery } from '@/hooks/useWorkersInfiniteQuery';
@@ -50,7 +50,14 @@ export default function WorkerList() {
   const { data, isLoading, isError, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useWorkersInfiniteQuery();
 
-  const workers       = data?.pages.flatMap((p) => p.content) ?? [];
+  const workers = useMemo(() => {
+    const seen = new Set<string>();
+    return (data?.pages.flatMap((p) => p.content) ?? []).filter((w) => {
+      if (seen.has(w.id)) return false;
+      seen.add(w.id);
+      return true;
+    });
+  }, [data?.pages]);
   const totalElements = data?.pages[0]?.totalElements ?? 0;
 
   useEffect(() => {

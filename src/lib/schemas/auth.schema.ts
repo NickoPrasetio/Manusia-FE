@@ -13,7 +13,6 @@ export const signupSchema = z
     gender: z.enum(['MALE', 'FEMALE'] as const, { error: 'Jenis kelamin wajib dipilih' }),
     password: z.string().min(6, 'Password minimal 6 karakter'),
     confirmPassword: z.string().min(1, 'Konfirmasi password wajib diisi'),
-    userType: z.enum(['CUSTOMER', 'WORKER'] as const),
   })
   .refine((d) => d.password === d.confirmPassword, {
     message: 'Password tidak sama',
@@ -21,7 +20,6 @@ export const signupSchema = z
   });
 
 export type SignupFormValues = z.infer<typeof signupSchema>;
-export type UserType = SignupFormValues['userType'];
 
 export const loginSchema = z.object({
   email:    z.string().min(1, 'Email wajib diisi').email('Format email tidak valid'),

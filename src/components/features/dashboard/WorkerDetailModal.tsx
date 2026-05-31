@@ -86,9 +86,9 @@ export default function WorkerDetailModal({ worker, onClose }: Props) {
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3 mb-5">
             {[
-              { label: 'Usia',       value: `${worker.age} th`            },
-              { label: 'Pengalaman', value: `${worker.experience} th`     },
-              { label: 'Ulasan',     value: worker.totalReviews.toString() },
+              { label: 'Usia',       value: worker.age ? `${worker.age} th` : '—'        },
+              { label: 'Pengalaman', value: worker.experience ? `${worker.experience} th` : '—' },
+              { label: 'Ulasan',     value: worker.totalReviews.toString()                },
             ].map(({ label, value }) => (
               <div key={label} className="bg-blue-50 rounded-2xl py-3 px-2 text-center">
                 <p className="text-base font-bold text-blue-700">{value}</p>
@@ -96,6 +96,26 @@ export default function WorkerDetailModal({ worker, onClose }: Props) {
               </div>
             ))}
           </div>
+
+          {/* Extra info (gender, birth place) */}
+          {(worker.gender || worker.birthPlace) && (
+            <div className="mb-4 bg-gray-50 rounded-2xl px-4 py-3 space-y-2">
+              {worker.gender && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Jenis kelamin</span>
+                  <span className="font-semibold text-gray-800">
+                    {worker.gender === 'MALE' ? '👨 Laki-laki' : '👩 Perempuan'}
+                  </span>
+                </div>
+              )}
+              {worker.birthPlace && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Tempat lahir</span>
+                  <span className="font-semibold text-gray-800">{worker.birthPlace}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Bio */}
           <div className="mb-4">

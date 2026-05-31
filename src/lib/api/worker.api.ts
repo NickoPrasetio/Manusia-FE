@@ -16,8 +16,19 @@ export interface WorkerApiResponse {
   isAvailable: boolean;
   workStatus: WorkStatus;
   bio: string;
+  gender?: string;
+  birthPlace?: string;
   latitude?: number;
   longitude?: number;
+}
+
+export interface UpdateMyProfilePayload {
+  name?:       string;
+  age?:        number;
+  location?:   string;
+  bio?:        string;
+  gender?:     string;
+  birthPlace?: string;
 }
 
 export interface WorkerCreatePayload {
@@ -42,9 +53,11 @@ export interface WorkerPage {
 function toWorker(n: WorkerApiResponse): Worker {
   return {
     ...n,
-    workStatus: n.workStatus ?? 'OPEN',
-    latitude:  n.latitude,
-    longitude: n.longitude,
+    workStatus:  n.workStatus ?? 'OPEN',
+    gender:      n.gender,
+    birthPlace:  n.birthPlace,
+    latitude:    n.latitude,
+    longitude:   n.longitude,
     reviews: [],
   };
 }
@@ -100,6 +113,16 @@ export const workerApi = {
 
   getMyProfile: async (token: string): Promise<WorkerApiResponse> => {
     return apiClient.get<WorkerApiResponse>('/api/users/me/profile', token);
+  },
+
+  updateMyProfile: async (data: UpdateMyProfilePayload, token: string): Promise<WorkerApiResponse> => {
+    return apiClient.put<WorkerApiResponse>('/api/users/me/profile', data, token);
+  },
+
+  uploadMyPhoto: async (file: File, token: string): Promise<WorkerApiResponse> => {
+    const form = new FormData();
+    form.append('file', file);
+    return apiClient.upload<WorkerApiResponse>('/api/users/me/photo', form, token);
   },
 
   updateAvailability: async (

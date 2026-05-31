@@ -21,12 +21,12 @@ function mapError(err: unknown): AuthError {
 function mapUser(res: {
   id: string; name: string; email: string;
   phone?: string; role: string; avatar?: string;
-  userType?: 'CUSTOMER' | 'WORKER'; latitude?: number; longitude?: number;
+  latitude?: number; longitude?: number;
 }): User {
   return {
     id: res.id, name: res.name, email: res.email,
     phone: res.phone, role: res.role, avatar: res.avatar,
-    userType: res.userType, latitude: res.latitude, longitude: res.longitude,
+    latitude: res.latitude, longitude: res.longitude,
   };
 }
 
@@ -35,9 +35,8 @@ export class AuthRepository implements IAuthRepository {
     try {
       const res = await authApi.register(
         input.name, input.email, input.password,
-        input.phone, input.userType as 'CUSTOMER' | 'WORKER',
-        input.nik, input.birthDate, input.gender, input.ktpFile,
-        input.latitude, input.longitude,
+        input.phone, input.nik, input.birthDate, input.gender,
+        input.ktpFile, input.latitude, input.longitude,
       );
       return { success: true, data: { user: mapUser(res), token: res.token! } };
     } catch (err) {

@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ClipboardList,
   Users,
@@ -8,15 +10,16 @@ import {
   Star,
   ChevronRight,
   MapPin,
-  Sparkles,
+  HandHelping,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import PostJobButton from './PostJobButton';
 
 // ── Hero ─────────────────────────────────────────────────────────────────────
 
 function Hero() {
-  const user     = useAuthStore((s) => s.user);
-  const isWorker = user?.userType === 'WORKER';
+  const user   = useAuthStore((s) => s.user);
+  const router = useRouter();
 
   const initials = (user?.name ?? 'U')
     .split(' ')
@@ -26,28 +29,29 @@ function Hero() {
     .toUpperCase();
 
   return (
-    <div className="mx-4 mt-4 rounded-3xl bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 p-5 overflow-hidden relative shadow-lg shadow-blue-200">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => router.push('/dashboard/bio')}
+      onKeyDown={(e) => e.key === 'Enter' && router.push('/dashboard/bio')}
+      className="mx-4 mt-4 rounded-3xl bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 p-5 overflow-hidden relative shadow-lg shadow-blue-200 cursor-pointer select-none active:scale-[0.98] transition-transform"
+    >
       {/* Decorative blobs */}
       <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full pointer-events-none" />
       <div className="absolute right-10 bottom-0 w-16 h-16 bg-white/5 rounded-full pointer-events-none" />
 
-      <div className="flex items-center justify-between relative">
+      <div className="flex items-center justify-between relative z-10">
         <div className="flex-1">
-          {/* Role chip */}
-          <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full mb-2 ${
-            isWorker ? 'bg-green-400/20 text-green-200' : 'bg-white/20 text-white/90'
-          }`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${isWorker ? 'bg-green-300' : 'bg-white/70'}`} />
-            {isWorker ? 'Penolong' : 'Pengguna'}
+          {/* Edit hint chip */}
+          <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-white/20 text-white/90 px-2 py-0.5 rounded-full mb-2">
+            <ChevronRight size={9} className="opacity-70" />
+            Lihat &amp; Edit Profil
           </span>
-
           <h2 className="text-white text-xl font-bold leading-snug">
             Halo, {user?.name?.split(' ')[0] ?? 'Kamu'}! 👋
           </h2>
           <p className="text-white/70 text-xs mt-1.5 leading-relaxed max-w-[200px]">
-            {isWorker
-              ? 'Siap membantu orang-orang di sekitarmu hari ini?'
-              : 'Butuh bantuan? Temukan orang yang tepat di sini.'}
+            Butuh bantuan atau ingin membantu? Semuanya ada di sini.
           </p>
         </div>
 
@@ -63,7 +67,7 @@ function Hero() {
 
       {/* Location hint */}
       {(user?.latitude || user?.longitude) && (
-        <div className="mt-3 flex items-center gap-1 text-white/50 text-[10px]">
+        <div className="relative z-10 mt-3 flex items-center gap-1 text-white/50 text-[10px]">
           <MapPin size={10} />
           <span>Lokasi terdeteksi</span>
         </div>
@@ -72,12 +76,9 @@ function Hero() {
   );
 }
 
-// ── "Seberapa Baik Saya" card — WORKER only ───────────────────────────────────
+// ── "Seberapa Baik Saya" card — all users ────────────────────────────────────
 
 function MyReviewCard() {
-  const isWorker = useAuthStore((s) => s.user?.userType === 'WORKER');
-  if (!isWorker) return null;
-
   return (
     <div className="px-4 mt-3">
       <Link
@@ -89,7 +90,7 @@ function MyReviewCard() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-white font-bold text-sm leading-tight">Seberapa Baik Saya?</p>
-          <p className="text-white/80 text-xs mt-0.5">Lihat ulasan dari pelangganmu</p>
+          <p className="text-white/80 text-xs mt-0.5">Lihat ulasan yang kamu terima</p>
         </div>
         <ChevronRight size={18} className="text-white/70 shrink-0 group-hover:translate-x-0.5 transition-transform" />
       </Link>
@@ -99,65 +100,40 @@ function MyReviewCard() {
 
 // ── Action grid ───────────────────────────────────────────────────────────────
 
-interface ActionCard {
-  href:       string;
-  icon:       React.ReactNode;
-  title:      string;
-  desc:       string;
-  iconBg:     string;
-  badge?:     string;
-  badgeColor?: string;
-  fullWidth?: boolean;
-}
-
-function ActionGrid() {
-  const isCustomer = useAuthStore((s) => s.user?.userType === 'CUSTOMER');
-
-  const cards: ActionCard[] = [
+function ActionGrid({ onPostJob }: { onPostJob: () => void }) {
+  const linkCards = [
     {
-      href:      '/dashboard/orders',
-      icon:      <ClipboardList size={20} className="text-blue-600" />,
-      title:     'My Order',
-      desc:      'Kelola pesananmu',
-      iconBg:    'bg-blue-100',
-      badge:     'Order',
-      badgeColor:'text-blue-600 bg-blue-50',
+      href:   '/dashboard/orders',
+      icon:   <ClipboardList size={20} className="text-blue-600" />,
+      title:  'My Order',
+      desc:   'Kelola pesananmu',
+      iconBg: 'bg-blue-100',
     },
     {
-      href:      '/dashboard/workers',
-      icon:      <Users size={20} className="text-emerald-600" />,
-      title:     'Orang Baik',
-      desc:      'di Sekitar',
-      iconBg:    'bg-emerald-100',
-      badge:     'Cari',
-      badgeColor:'text-emerald-600 bg-emerald-50',
+      href:   '/dashboard/workers',
+      icon:   <Users size={20} className="text-emerald-600" />,
+      title:  'Orang Baik',
+      desc:   'di Sekitar',
+      iconBg: 'bg-emerald-100',
     },
     {
-      href:      '/dashboard/jobs',
-      icon:      <Briefcase size={20} className="text-orange-600" />,
-      title:     'Pekerjaan',
-      desc:      'di Sekitar',
-      iconBg:    'bg-orange-100',
-      badge:     'Lihat',
-      badgeColor:'text-orange-600 bg-orange-50',
-      fullWidth:  isCustomer,   // for customers, jobs is the last card → full width
+      href:   '/dashboard/jobs',
+      icon:   <Briefcase size={20} className="text-orange-600" />,
+      title:  'Pekerjaan',
+      desc:   'di Sekitar',
+      iconBg: 'bg-orange-100',
     },
   ];
 
-  // for CUSTOMER: My Order (half) + Orang Baik (half), Pekerjaan (full)
-  // for WORKER:   My Order (half) + Orang Baik (half), Pekerjaan (half) + [future]
+  const cardClass =
+    'group bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 active:scale-[0.97] transition-all flex flex-col gap-3';
+
   return (
     <div className="px-4 mt-4">
       <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Menu Utama</p>
       <div className="grid grid-cols-2 gap-3">
-        {cards.map((card) => (
-          <Link
-            key={card.href}
-            href={card.href}
-            className={`group bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 active:scale-[0.97] transition-all flex flex-col gap-3 ${
-              card.fullWidth ? 'col-span-2 flex-row items-center' : ''
-            }`}
-          >
+        {linkCards.map((card) => (
+          <Link key={card.href} href={card.href} className={cardClass}>
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${card.iconBg}`}>
               {card.icon}
             </div>
@@ -165,33 +141,35 @@ function ActionGrid() {
               <p className="text-sm font-bold text-gray-900 leading-tight">{card.title}</p>
               <p className="text-xs text-gray-400 mt-0.5 leading-tight">{card.desc}</p>
             </div>
-            {card.fullWidth && (
-              <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${card.badgeColor}`}>
-                {card.badge}
-              </span>
-            )}
           </Link>
         ))}
+
+        {/* Minta Tolong — same card design, triggers sheet instead of navigation */}
+        <button type="button" onClick={onPostJob} className={cardClass + ' text-left'}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-violet-100">
+            <HandHelping size={20} className="text-violet-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-gray-900 leading-tight">Minta Tolong</p>
+            <p className="text-xs text-gray-400 mt-0.5 leading-tight">Posting kebutuhanmu</p>
+          </div>
+        </button>
       </div>
     </div>
   );
 }
 
-// ── Worker stats strip ────────────────────────────────────────────────────────
+// ── Platform stats strip ──────────────────────────────────────────────────────
 
-function WorkerStats() {
-  const user     = useAuthStore((s) => s.user);
-  const isWorker = user?.userType === 'WORKER';
-  if (!isWorker) return null;
-
+function PlatformStats() {
   return (
     <div className="px-4 mt-4">
       <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Platform</p>
       <div className="grid grid-cols-3 gap-2.5">
         {[
-          { label: 'Penolong',  value: '100+', emoji: '🙌' },
-          { label: 'Kota',      value: '10+',  emoji: '📍' },
-          { label: 'Avg Rating',value: '4.8',  emoji: '⭐' },
+          { label: 'Penolong',   value: '100+', emoji: '🙌' },
+          { label: 'Kota',       value: '10+',  emoji: '📍' },
+          { label: 'Avg Rating', value: '4.8',  emoji: '⭐' },
         ].map(({ label, value, emoji }) => (
           <div key={label} className="bg-white rounded-2xl p-3 text-center border border-gray-100 shadow-sm">
             <span className="text-lg">{emoji}</span>
@@ -204,34 +182,23 @@ function WorkerStats() {
   );
 }
 
-// ── Tip banner ────────────────────────────────────────────────────────────────
-
-function TipBanner() {
-  const isCustomer = useAuthStore((s) => s.user?.userType === 'CUSTOMER');
-  if (!isCustomer) return null;
-
-  return (
-    <div className="mx-4 mt-4">
-      <div className="bg-gradient-to-r from-violet-50 to-blue-50 border border-violet-100 rounded-2xl px-4 py-3 flex items-center gap-3">
-        <Sparkles size={16} className="text-violet-400 shrink-0" />
-        <p className="text-xs text-violet-700 leading-relaxed">
-          Tap <span className="font-bold">Minta Tolong</span> di bawah untuk memposting kebutuhanmu ke orang-orang di sekitar!
-        </p>
-      </div>
-    </div>
-  );
-}
-
 // ── Root export ───────────────────────────────────────────────────────────────
 
 export default function DashboardContent() {
+  const [postJobOpen, setPostJobOpen] = useState(false);
+
   return (
-    <div className="flex flex-col pb-32">
+    <div className="flex flex-col pb-24">
       <Hero />
       <MyReviewCard />
-      <ActionGrid />
-      <WorkerStats />
-      <TipBanner />
+      <ActionGrid onPostJob={() => setPostJobOpen(true)} />
+      <PlatformStats />
+
+      {/* Job form sheet — controlled by ActionGrid card */}
+      <PostJobButton
+        externalOpen={postJobOpen}
+        onExternalClose={() => setPostJobOpen(false)}
+      />
     </div>
   );
 }

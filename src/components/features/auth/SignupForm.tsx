@@ -6,14 +6,11 @@ import { useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   User, Mail, Lock, Phone, MapPin, Calendar, CreditCard,
-  Briefcase, ShoppingBag, CheckCircle2,
-  AlertCircle, Loader2, RefreshCw, Upload, ScanLine,
+  CheckCircle2, AlertCircle, Loader2, RefreshCw, Upload, ScanLine,
   Mars, Venus,
 } from 'lucide-react';
 import { useSignupForm } from '@/hooks/useSignupForm';
-import { UserType } from '@/lib/schemas/auth.schema';
 import { LocationState } from '@/hooks/useLocation';
-import { useAuthStore } from '@/store/authStore';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 
@@ -172,70 +169,6 @@ function GenderSelector({
   );
 }
 
-// ─── UserType Selector ────────────────────────────────────────────────────────
-
-function TypeCard({
-  active, icon, label, description, activeColor, onClick,
-}: {
-  active: boolean; icon: React.ReactNode; label: string;
-  description: string; activeColor: 'blue' | 'orange'; onClick: () => void;
-}) {
-  const c = {
-    blue: {
-      border:   active ? 'border-blue-500 bg-blue-50'   : 'border-gray-200 bg-white hover:border-blue-300',
-      iconBg:   active ? 'bg-blue-500'   : 'bg-gray-100',
-      iconText: active ? 'text-white'    : 'text-gray-500',
-      label:    active ? 'text-blue-600' : 'text-gray-700',
-      check:    'text-blue-500',
-    },
-    orange: {
-      border:   active ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white hover:border-orange-300',
-      iconBg:   active ? 'bg-orange-500'   : 'bg-gray-100',
-      iconText: active ? 'text-white'      : 'text-gray-500',
-      label:    active ? 'text-orange-600' : 'text-gray-700',
-      check:    'text-orange-500',
-    },
-  }[activeColor];
-
-  return (
-    <button type="button" onClick={onClick}
-      className={`relative flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all ${c.border}`}
-    >
-      {active && <CheckCircle2 size={16} className={`absolute top-2 right-2 ${c.check}`} />}
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${c.iconBg}`}>
-        <span className={c.iconText}>{icon}</span>
-      </div>
-      <div className="text-center">
-        <p className={`text-sm font-bold ${c.label}`}>{label}</p>
-        <p className="text-xs text-gray-400 mt-0.5">{description}</p>
-      </div>
-    </button>
-  );
-}
-
-function UserTypeSelector({
-  value, onSelect, error,
-}: { value: UserType | undefined; onSelect: (t: UserType) => void; error?: string }) {
-  return (
-    <div className="flex flex-col gap-2">
-      <label className="text-sm font-semibold text-gray-700">Tipe Akun</label>
-      <div className="grid grid-cols-2 gap-3">
-        <TypeCard active={value === 'CUSTOMER'} icon={<ShoppingBag size={20} />}
-          label="Customer" description="Cari & booking jasa"
-          activeColor="blue" onClick={() => onSelect('CUSTOMER')} />
-        <TypeCard active={value === 'WORKER'} icon={<Briefcase size={20} />}
-          label="Pekerja" description="Tawarkan keahlianmu"
-          activeColor="orange" onClick={() => onSelect('WORKER')} />
-      </div>
-      {error && (
-        <p className="flex items-center gap-1 text-xs text-red-500">
-          <AlertCircle size={12} /> {error}
-        </p>
-      )}
-    </div>
-  );
-}
-
 // ─── Location Widget ──────────────────────────────────────────────────────────
 
 function LocationWidget({ status, latitude, longitude, errorMsg, retry }: LocationState) {
@@ -308,13 +241,11 @@ export default function SignupForm() {
   const router = useRouter();
 
   function handleSuccess() {
-    const { user } = useAuthStore.getState();
-    router.push(user?.userType === 'WORKER' ? '/worker-dashboard' : '/dashboard');
+    router.push('/dashboard');
   }
 
   const {
     register, errors, isSubmitting, submitError,
-    userType, selectUserType,
     location,
     ktpPreview, ocrLoading, ocrDone, handleKtpChange,
     setValue, watch,
@@ -390,13 +321,6 @@ export default function SignupForm() {
           </p>
         )}
       </div>
-
-      {/* ── Account Type ── */}
-      <UserTypeSelector
-        value={userType}
-        onSelect={selectUserType}
-        error={errors.userType ? 'Pilih tipe akun terlebih dahulu' : undefined}
-      />
 
       {/* ── Nama (auto-filled by OCR) ── */}
       <div className="relative">
