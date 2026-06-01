@@ -24,4 +24,5 @@ export interface IAuthRepository {
   login(email: string, password: string): Promise<AuthResult<AuthSession>>;
   updateProfile(token: string, data: { name?: string; phone?: string }): Promise<AuthResult<User>>;
   uploadAvatar(token: string, file: File): Promise<AuthResult<User>>;
+  changePassword(token: string, currentPassword: string, newPassword: string): Promise<AuthResult<void>>;
 }

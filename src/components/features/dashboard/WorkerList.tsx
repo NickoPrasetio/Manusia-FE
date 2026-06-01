@@ -48,7 +48,7 @@ export default function WorkerList() {
   useEffect(() => { setSearchQuery(debouncedSearch); }, [debouncedSearch, setSearchQuery]);
 
   const { data, isLoading, isError, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useWorkersInfiniteQuery();
+    useWorkersInfiniteQuery(searchQuery, filterAvailable);
 
   const workers = useMemo(() => {
     const seen = new Set<string>();

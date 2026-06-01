@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft, MapPin, Calendar, Clock, Briefcase, Navigation,
@@ -8,8 +7,8 @@ import {
 } from 'lucide-react';
 import AuthGuard from '@/components/providers/AuthGuard';
 import { useAuthStore } from '@/store/authStore';
-import { jobApi } from '@/lib/api/job.api';
-import { NearbyJob, JobCategory } from '@/types';
+import { useJobDetail } from '@/hooks/useJobDetail';
+import { JobCategory } from '@/types';
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -56,23 +55,10 @@ function InfoCard({
 function JobDetailContent() {
   const params = useParams();
   const router = useRouter();
-  const { token, user } = useAuthStore();
+  const { user } = useAuthStore();
 
   const id = params.id as string;
-
-  const [job,     setJob]     = useState<NearbyJob | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState('');
-
-  useEffect(() => {
-    if (!id || !token) return;
-    setLoading(true);
-    setError('');
-    jobApi.getById(id, token)
-      .then(setJob)
-      .catch(() => setError('Gagal memuat detail pekerjaan'))
-      .finally(() => setLoading(false));
-  }, [id, token]);
+  const { job, isLoading: loading, error, refetch } = useJobDetail(id);
 
   const isOwner = job?.customerId === user?.id;
   const meta    = job ? CATEGORY_META[job.category] : null;
@@ -116,14 +102,7 @@ function JobDetailContent() {
             <p className="text-sm text-gray-400 mt-1">Periksa koneksi dan coba lagi</p>
           </div>
           <button
-            onClick={() => {
-              setError('');
-              setLoading(true);
-              jobApi.getById(id, token!)
-                .then(setJob)
-                .catch(() => setError('Gagal memuat detail pekerjaan'))
-                .finally(() => setLoading(false));
-            }}
+            onClick={() => refetch()}
             className="px-5 py-2.5 bg-blue-500 text-white text-sm font-semibold rounded-2xl"
           >
             Coba Lagi

@@ -70,4 +70,13 @@ export class AuthRepository implements IAuthRepository {
       return { success: false, error: mapError(err) };
     }
   }
+
+  async changePassword(token: string, currentPassword: string, newPassword: string): Promise<AuthResult<void>> {
+    try {
+      await authApi.changePassword(currentPassword, newPassword, token);
+      return { success: true, data: undefined };
+    } catch (err) {
+      return { success: false, error: mapError(err) };
+    }
+  }
 }

@@ -11,9 +11,11 @@ import {
   ChevronRight,
   MapPin,
   HandHelping,
+  Loader2,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import PostJobButton from './PostJobButton';
+import { useWorkerAvailability } from '@/hooks/useWorkerAvailability';
 
 // ── Hero ─────────────────────────────────────────────────────────────────────
 
@@ -72,6 +74,68 @@ function Hero() {
           <span>Lokasi terdeteksi</span>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Status Toggle ─────────────────────────────────────────────────────────────
+
+function StatusToggle() {
+  const { isAvailable, toggle, isToggling } = useWorkerAvailability();
+
+  return (
+    <div className="mx-4 mt-3">
+      <div
+        className={`flex items-center justify-between px-4 py-3 rounded-2xl border transition-all
+          ${isAvailable
+            ? 'bg-green-50 border-green-200'
+            : 'bg-gray-50 border-gray-200'
+          }`}
+      >
+        {/* Label kiri */}
+        <div className="flex items-center gap-2.5">
+          <div className={`w-2.5 h-2.5 rounded-full shrink-0 transition-colors
+            ${isAvailable ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`}
+          />
+          <div>
+            <p className={`text-sm font-bold leading-tight transition-colors
+              ${isAvailable ? 'text-green-700' : 'text-gray-600'}`}>
+              {isAvailable ? 'Siap Bekerja' : 'Sedang Sibuk'}
+            </p>
+            <p className="text-[11px] text-gray-400 mt-0.5">
+              {isAvailable
+                ? 'Kamu terlihat oleh orang yang butuh bantuan'
+                : 'Kamu tidak tampil di daftar pencarian'}
+            </p>
+          </div>
+        </div>
+
+        {/* Toggle switch */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            toggle(!isAvailable);
+          }}
+          disabled={isToggling}
+          className={`relative shrink-0 w-12 h-6 rounded-full transition-colors duration-300
+            focus:outline-none disabled:opacity-60
+            ${isAvailable ? 'bg-green-400' : 'bg-gray-300'}`}
+          aria-label="Toggle status"
+        >
+          {isToggling ? (
+            <Loader2
+              size={14}
+              className="absolute inset-0 m-auto text-white animate-spin"
+            />
+          ) : (
+            <span
+              className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm
+                transition-transform duration-300
+                ${isAvailable ? 'translate-x-6' : 'translate-x-0'}`}
+            />
+          )}
+        </button>
+      </div>
     </div>
   );
 }
@@ -190,6 +254,7 @@ export default function DashboardContent() {
   return (
     <div className="flex flex-col pb-24">
       <Hero />
+      <StatusToggle />
       <MyReviewCard />
       <ActionGrid onPostJob={() => setPostJobOpen(true)} />
       <PlatformStats />

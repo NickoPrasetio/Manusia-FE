@@ -3,7 +3,10 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import BookingForm from '@/components/features/booking/BookingForm';
 import AuthGuard from '@/components/providers/AuthGuard';
-import { workerApi } from '@/lib/api/worker.api';
+import { WorkerRepository } from '@/data/worker/WorkerRepository';
+import { GetWorkerByIdUseCase } from '@/domain/worker/usecases/GetWorkerByIdUseCase';
+
+const workerUseCase = new GetWorkerByIdUseCase(new WorkerRepository());
 
 interface Props {
   params: Promise<{ workerId: string }>;
@@ -14,7 +17,7 @@ export default async function BookingPage({ params }: Props) {
 
   let worker;
   try {
-    worker = await workerApi.getById(workerId);
+    worker = await workerUseCase.execute(workerId);
   } catch {
     notFound();
   }

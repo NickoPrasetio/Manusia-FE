@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Camera, Save, Loader2, CheckCircle2,
   User, MapPin, Calendar, FileText, Mars, Venus, AlertCircle,
 } from 'lucide-react';
-import { useAuthStore } from '@/store/authStore';
-import { workerApi, WorkerApiResponse } from '@/lib/api/worker.api';
 import AuthGuard from '@/components/providers/AuthGuard';
+import { useBioForm } from '@/hooks/useBioForm';
 
 // ── Gender selector ───────────────────────────────────────────────────────────
 
@@ -67,87 +66,22 @@ const inputClass =
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 function BioContent() {
-  const router   = useRouter();
-  const { user, token } = useAuthStore();
-  const fileRef  = useRef<HTMLInputElement>(null);
+  const router  = useRouter();
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const [profile, setProfile]     = useState<WorkerApiResponse | null>(null);
-  const [loading, setLoading]     = useState(true);
-  const [saving,  setSaving]      = useState(false);
-  const [saved,   setSaved]       = useState(false);
-  const [error,   setError]       = useState('');
-  const [uploading, setUploading] = useState(false);
-
-  // Form state
-  const [name,       setName]       = useState('');
-  const [age,        setAge]        = useState('');
-  const [gender,     setGender]     = useState('');
-  const [birthPlace, setBirthPlace] = useState('');
-  const [location,   setLocation]   = useState('');
-  const [bio,        setBio]        = useState('');
-
-  // Load current profile
-  useEffect(() => {
-    if (!token) return;
-    workerApi.getMyProfile(token)
-      .then((p) => {
-        setProfile(p);
-        setName(p.name || user?.name || '');
-        setAge(p.age ? String(p.age) : '');
-        setGender(p.gender || '');
-        setBirthPlace(p.birthPlace || '');
-        setLocation(p.location || '');
-        setBio(p.bio || '');
-      })
-      .catch(() => {
-        // Profile doesn't exist yet — pre-fill from auth store
-        setName(user?.name || '');
-      })
-      .finally(() => setLoading(false));
-  }, [token, user]);
-
-  async function handleSave() {
-    if (!token) return;
-    setSaving(true);
-    setError('');
-    setSaved(false);
-    try {
-      const updated = await workerApi.updateMyProfile({
-        name:       name.trim(),
-        age:        age ? parseInt(age, 10) : undefined,
-        gender,
-        birthPlace: birthPlace.trim(),
-        location:   location.trim(),
-        bio:        bio.trim(),
-      }, token);
-      setProfile(updated);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } catch (e: unknown) {
-      setError((e as Error)?.message ?? 'Gagal menyimpan profil');
-    } finally {
-      setSaving(false);
-    }
-  }
+  const {
+    profile, loading, saving, saved, error, uploading,
+    fields: { name, age, gender, birthPlace, location, bio },
+    setters: { setName, setAge, setGender, setBirthPlace, setLocation, setBio },
+    save: handleSave,
+    uploadPhoto,
+  } = useBioForm();
 
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!file || !token) return;
-    if (!profile) {
-      setError('Simpan profil terlebih dahulu sebelum mengganti foto');
-      return;
-    }
-    setUploading(true);
-    setError('');
-    try {
-      const updated = await workerApi.uploadMyPhoto(file, token);
-      setProfile(updated);
-    } catch (e: unknown) {
-      setError((e as Error)?.message ?? 'Gagal mengunggah foto');
-    } finally {
-      setUploading(false);
-      e.target.value = '';
-    }
+    if (!file) return;
+    await uploadPhoto(file);
+    e.target.value = '';
   }
 
   const avatarUrl = profile?.avatar || '';

@@ -1,22 +1,17 @@
 'use client';
 
-import { useRef, useEffect, useMemo, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { ArrowLeft, Star, MessageSquare, Loader2, ArrowUpDown } from 'lucide-react';
 import AuthGuard from '@/components/providers/AuthGuard';
-import { useAuthStore } from '@/store/authStore';
-import { reviewApi, ReviewApiResponse, RatingDist } from '@/lib/api/review.api';
-
-type SortOption = 'recent' | 'highest' | 'lowest';
+import { ReviewApiResponse, RatingDist } from '@/lib/api/review.api';
+import { useMyReviews, SortOption } from '@/hooks/useMyReviews';
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'recent',  label: 'Terbaru'           },
   { value: 'highest', label: 'Rating Tertinggi'  },
   { value: 'lowest',  label: 'Rating Terendah'   },
 ];
-
-const LIMIT = 10;
 
 // ── Star renderer ─────────────────────────────────────────────────────────────
 
@@ -130,43 +125,18 @@ function RatingSummary({
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 function MyReviewsContent() {
-  const user     = useAuthStore((s) => s.user);
   const sentinel = useRef<HTMLDivElement>(null);
   const [sortBy, setSortBy] = useState<SortOption>('recent');
 
   const {
-    data,
+    reviews,
+    stats,
     isLoading,
     isError,
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
-  } = useInfiniteQuery({
-    queryKey: ['my-reviews-page', user?.id],
-    queryFn: ({ pageParam }) =>
-      reviewApi.getByWorkerPage(user!.id, pageParam as number, LIMIT),
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) =>
-      lastPage.last ? undefined : lastPage.page + 1,
-    enabled: !!user?.id,
-  });
-
-  // Flatten pages, dedup by id, then sort
-  const reviews = useMemo(() => {
-    const seen = new Set<string>();
-    const flat = (data?.pages.flatMap((p) => p.reviews) ?? []).filter((r) => {
-      if (seen.has(r.id)) return false;
-      seen.add(r.id);
-      return true;
-    });
-    if (sortBy === 'highest') return [...flat].sort((a, b) => b.rating - a.rating || b.date.localeCompare(a.date));
-    if (sortBy === 'lowest')  return [...flat].sort((a, b) => a.rating - b.rating || b.date.localeCompare(a.date));
-    // 'recent' — default order from backend (already newest first)
-    return flat;
-  }, [data?.pages, sortBy]);
-
-  // Stats come from the first page (always accurate — full aggregate)
-  const stats = data?.pages[0];
+  } = useMyReviews(sortBy);
 
   // IntersectionObserver sentinel
   useEffect(() => {

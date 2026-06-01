@@ -1,7 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { reviewApi } from '@/lib/api/review.api';
+import { ReviewRepository } from '@/data/review/ReviewRepository';
+import { CreateReviewUseCase } from '@/domain/review/usecases/CreateReviewUseCase';
 import { queryKeys } from '@/lib/queryKeys';
 import { useAuthStore } from '@/store/authStore';
+
+const useCase = new CreateReviewUseCase(new ReviewRepository());
 
 interface SubmitReviewParams {
   workerId:  string;
@@ -18,13 +21,15 @@ export function useSubmitOrderReviewMutation() {
 
   return useMutation({
     mutationFn: (params: SubmitReviewParams) =>
-      reviewApi.createWithPhotos(
-        params.workerId,
-        params.bookingId,
-        user?.name ?? 'Anonim',
-        params.rating,
-        params.comment,
-        params.photos,
+      useCase.execute(
+        {
+          workerId:  params.workerId,
+          bookingId: params.bookingId,
+          userName:  user?.name ?? 'Anonim',
+          rating:    params.rating,
+          comment:   params.comment,
+          photos:    params.photos,
+        },
         token!,
       ),
     onSuccess: (_, params) => {

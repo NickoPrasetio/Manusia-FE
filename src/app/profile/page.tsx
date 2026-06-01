@@ -7,82 +7,39 @@ import {
   CreditCard, Lock, LogOut, Eye, EyeOff,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
-import { authApi } from '@/lib/api/auth.api';
 import AuthGuard from '@/components/providers/AuthGuard';
+import { useProfileSettings } from '@/hooks/useProfileSettings';
 
 function ProfileContent() {
-  const router                      = useRouter();
-  const { user, token, setUser }    = useAuthStore();
-  const fileInputRef                = useRef<HTMLInputElement>(null);
+  const router   = useRouter();
+  const { user } = useAuthStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Form fields
-  const [name,     setName]    = useState(user?.name  ?? '');
-  const [phone,    setPhone]   = useState(user?.phone ?? '');
-
-  // Save state
-  const [saving,   setSaving]  = useState(false);
-  const [saved,    setSaved]   = useState(false);
-  const [error,    setError]   = useState('');
-  const [uploading, setUploading] = useState(false);
-
-  // Change password state
-  const [showPwForm, setShowPwForm] = useState(false);
-  const [currentPw,  setCurrentPw]  = useState('');
-  const [newPw,      setNewPw]      = useState('');
+  // UI-only state (bukan business logic)
+  const [showPwForm,  setShowPwForm]  = useState(false);
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew,     setShowNew]     = useState(false);
-  const [pwSaving,    setPwSaving]    = useState(false);
-  const [pwSaved,     setPwSaved]     = useState(false);
-  const [pwError,     setPwError]     = useState('');
 
-  async function handleSave() {
-    if (!token) return;
-    setSaving(true);
-    setError('');
-    try {
-      const updated = await authApi.updateMe({ name: name.trim(), phone: phone.trim() }, token);
-      setUser({ name: updated.name, phone: updated.phone });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } catch (e: unknown) {
-      setError((e as Error)?.message ?? 'Gagal menyimpan profil');
-    } finally {
-      setSaving(false);
-    }
-  }
+  const {
+    name, setName, phone, setPhone,
+    saving, saved, error, uploading,
+    saveProfile: handleSave,
+    uploadAvatar,
+    currentPw, setCurrentPw,
+    newPw, setNewPw,
+    pwSaving, pwSaved, pwError,
+    changePassword, resetPasswordForm,
+  } = useProfileSettings();
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!file || !token) return;
-    setUploading(true);
-    setError('');
-    try {
-      const updated = await authApi.uploadAvatar(file, token);
-      setUser({ avatar: updated.avatar });
-    } catch (e: unknown) {
-      setError((e as Error)?.message ?? 'Gagal mengunggah foto');
-    } finally {
-      setUploading(false);
-    }
+    if (!file) return;
+    await uploadAvatar(file);
   }
 
   async function handleChangePassword() {
-    setPwError('');
-    if (!currentPw)       { setPwError('Password saat ini wajib diisi'); return; }
-    if (!newPw)           { setPwError('Password baru wajib diisi'); return; }
-    if (newPw.length < 8) { setPwError('Password baru minimal 8 karakter'); return; }
-    if (!token) return;
-    setPwSaving(true);
-    try {
-      await authApi.changePassword(currentPw, newPw, token);
-      setPwSaved(true);
-      setCurrentPw(''); setNewPw('');
-      setTimeout(() => { setPwSaved(false); setShowPwForm(false); }, 2500);
-    } catch (e: unknown) {
-      setPwError((e as Error)?.message ?? 'Gagal mengganti password');
-    } finally {
-      setPwSaving(false);
-    }
+    await changePassword();
+    if (pwSaved) setTimeout(() => setShowPwForm(false), 2500);
   }
 
   function handleLogout() {
@@ -308,7 +265,7 @@ function ProfileContent() {
 
               <div className="flex gap-2 pt-1">
                 <button
-                  onClick={() => { setShowPwForm(false); setPwError(''); setCurrentPw(''); setNewPw(''); }}
+                  onClick={() => { setShowPwForm(false); resetPasswordForm(); }}
                   className="flex-1 py-3 border border-gray-200 text-gray-600 font-semibold rounded-2xl
                              hover:bg-gray-50 transition-colors text-sm"
                 >
