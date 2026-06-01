@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import AuthGuard from '@/components/providers/AuthGuard';
 import NearbyJobsList from '@/components/features/dashboard/NearbyJobsList';
-import PostJobButton from '@/components/features/dashboard/PostJobButton';
 
 export default function NearbyJobsPage() {
   return (
@@ -26,11 +25,9 @@ export default function NearbyJobsPage() {
         </div>
 
         {/* Jobs list */}
-        <div className="px-4 py-4 pb-28">
+        <div className="px-4 py-4 pb-6">
           <NearbyJobsList />
         </div>
-
-        <PostJobButton />
 
       </main>
     </AuthGuard>

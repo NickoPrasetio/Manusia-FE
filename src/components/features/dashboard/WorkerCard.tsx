@@ -7,10 +7,10 @@ import Button from '@/components/ui/Button';
 
 function WorkStatusBadge({ workStatus }: { workStatus: WorkStatus }) {
   if (workStatus === 'OPEN')
-    return <span className="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Tersedia</span>;
+    return <span className="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Siap Bekerja</span>;
   if (workStatus === 'BOOKED')
     return <span className="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Sedang Sibuk</span>;
-  return <span className="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">Tidak Tersedia</span>;
+  return <span className="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">Sedang Sibuk</span>;
 }
 
 function formatPrice(price: number): string {
@@ -81,7 +81,7 @@ export default function WorkerCard({ worker, onView }: WorkerCardProps) {
           disabled={worker.workStatus !== 'OPEN'}
           onClick={() => onView(worker)}
         >
-          {worker.workStatus === 'OPEN' ? 'Lihat' : worker.workStatus === 'BOOKED' ? 'Sibuk' : 'Penuh'}
+          {worker.workStatus === 'OPEN' ? 'Lihat' : 'Sibuk'}
         </Button>
       </div>
     </div>

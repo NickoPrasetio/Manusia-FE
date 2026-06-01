@@ -98,7 +98,7 @@ export default function WorkerList() {
           }`}
         >
           <span className={`w-2 h-2 rounded-full ${filterAvailable ? 'bg-white' : 'bg-green-400'}`} />
-          Tersedia Sekarang
+          Siap Bekerja
         </button>
       </div>
 

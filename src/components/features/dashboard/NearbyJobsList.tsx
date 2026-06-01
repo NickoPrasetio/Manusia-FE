@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Loader2, MapPin, Navigation, Briefcase } from 'lucide-react';
 import { JobCategory } from '@/types';
 import { useNearbyJobs, NearbyJobWithDistance } from '@/hooks/useNearbyJobs';
@@ -11,7 +12,7 @@ const CATEGORY_META: Record<JobCategory, { label: string; color: string; dot: st
   EVENT:   { label: 'Event',   color: 'bg-rose-50   text-rose-600',   dot: 'bg-rose-400'   },
 };
 
-function JobCard({ job }: { job: NearbyJobWithDistance }) {
+function JobCard({ job, onClick }: { job: NearbyJobWithDistance; onClick: () => void }) {
   const distLabel =
     job.distKm === 0
       ? null
@@ -22,7 +23,11 @@ function JobCard({ job }: { job: NearbyJobWithDistance }) {
   const meta = CATEGORY_META[job.category];
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3.5">
+    <div
+      onClick={onClick}
+      className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3.5
+                 cursor-pointer hover:border-blue-200 hover:shadow-md active:scale-[0.98]
+                 transition-all">
       <div className="flex items-center justify-between mb-2">
         <span className={`flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full ${meta.color}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} />
@@ -61,6 +66,7 @@ function JobCard({ job }: { job: NearbyJobWithDistance }) {
 }
 
 export default function NearbyJobsList() {
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState<JobCategory | ''>('');
 
   const {
@@ -90,6 +96,7 @@ export default function NearbyJobsList() {
   }, [hasMore, isFetchingMore, isLoading, fetchMore]);
 
   return (
+    <>
     <div className="flex flex-col gap-3">
 
       {/* Header */}
@@ -137,7 +144,11 @@ export default function NearbyJobsList() {
       {!isLoading && jobs.length > 0 && (
         <div className="flex flex-col gap-3">
           {jobs.map((job) => (
-            <JobCard key={job.id} job={job} />
+            <JobCard
+              key={job.id}
+              job={job}
+              onClick={() => router.push(`/dashboard/jobs/${job.id}`)}
+            />
           ))}
           <div ref={sentinelRef} className="h-1" aria-hidden />
         </div>
@@ -171,5 +182,7 @@ export default function NearbyJobsList() {
         </div>
       )}
     </div>
+
+    </>
   );
 }

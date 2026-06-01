@@ -145,11 +145,7 @@ export default function WorkerDetailModal({ worker, onClose }: Props) {
               size="md"
               onClick={() => { onClose(); router.push(`/booking/${worker.id}`); }}
             >
-              {worker.workStatus === 'OPEN'
-                ? 'Book Sekarang'
-                : worker.workStatus === 'BOOKED'
-                ? 'Sedang Sibuk'
-                : 'Tidak Tersedia'}
+              {worker.workStatus === 'OPEN' ? 'Book Sekarang' : 'Sedang Sibuk'}
             </Button>
           </div>
 
