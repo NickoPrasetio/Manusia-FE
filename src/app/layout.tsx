@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+import ServiceGuard from '@/components/providers/ServiceGuard';
 
 export const metadata: Metadata = {
   title: 'Manusia – Temukan Freelancer Terbaik',
@@ -23,7 +24,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="id">
       <body>
         <QueryProvider>
-          <div className="app-wrapper">{children}</div>
+          <ServiceGuard>
+            <div className="app-wrapper">{children}</div>
+          </ServiceGuard>
         </QueryProvider>
       </body>
     </html>
