@@ -21,16 +21,24 @@ import { INDONESIAN_CITIES } from '@/data/indonesian-cities';
 
 /* ─── schema ─────────────────────────────────────────────── */
 const schema = z.object({
-  address:      z.string().min(5,  'Masukkan alamat lengkap'),
-  city:         z.string().min(1,  'Pilih kota'),
-  bookingDate:  z.string().min(1,  'Pilih tanggal'),
-  startTime:    z.string().min(1,  'Pilih jam mulai'),
-  durationDays: z.coerce.number().min(1).max(30),
+  address:       z.string().min(5,  'Masukkan alamat lengkap'),
+  city:          z.string().min(1,  'Pilih kota'),
+  bookingDate:   z.string().min(1,  'Pilih tanggal'),
+  startTime:     z.string().min(1,  'Pilih jam mulai'),
+  durationDays:  z.preprocess((v) => Number(v), z.number().min(1).max(30)),
   paymentMethod: z.literal('CASH'),
-  notes:        z.string().optional(),
+  notes:         z.string().optional(),
 });
 
-type BookingFormValues = z.infer<typeof schema>;
+type BookingFormValues = {
+  address:       string;
+  city:          string;
+  bookingDate:   string;
+  startTime:     string;
+  durationDays:  number;
+  paymentMethod: 'CASH';
+  notes?:        string;
+};
 
 interface Props {
   worker: Worker;
