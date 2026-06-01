@@ -1,7 +1,8 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CheckCircle, ClipboardList, Home, Suspense } from 'lucide-react';
+import { CheckCircle, ClipboardList, Home } from 'lucide-react';
 
 function BookingSuccessContent() {
   const router     = useRouter();

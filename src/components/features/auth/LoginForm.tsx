@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock } from 'lucide-react';
 import { useLoginForm } from '@/hooks/useLoginForm';
-import { useAuthStore } from '@/store/authStore';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 
@@ -12,8 +11,7 @@ export default function LoginForm() {
   const router = useRouter();
 
   function handleSuccess() {
-    const { user } = useAuthStore.getState();
-    router.push(user?.userType === 'WORKER' ? '/worker-dashboard' : '/dashboard');
+    router.push('/dashboard');
   }
 
   const { register, errors, isSubmitting, submitError, onSubmit } = useLoginForm(handleSuccess);
@@ -33,7 +31,7 @@ export default function LoginForm() {
         {...register('password')}
       />
 
-      {submitError && (
+      {Boolean(submitError) && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
           <p className="text-sm text-red-600">{submitError}</p>
         </div>

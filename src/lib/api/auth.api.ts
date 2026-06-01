@@ -1,5 +1,4 @@
 import { apiClient } from './client';
-import { UserType } from '@/types';
 
 export interface AuthResponse {
   token: string;
@@ -8,7 +7,6 @@ export interface AuthResponse {
   email: string;
   phone?: string;
   role: string;
-  userType?: UserType;
   avatar?: string;
   latitude?: number;
   longitude?: number;
@@ -23,8 +21,9 @@ export const authApi = {
     email: string,
     password: string,
     phone: string,
-    userType: UserType,
+    nik: string,
     birthDate: string,
+    gender: string,
     ktpFile?: File,
     latitude?: number,
     longitude?: number,
@@ -34,8 +33,9 @@ export const authApi = {
     form.append('email', email);
     form.append('password', password);
     form.append('phone', phone);
-    form.append('userType', userType);
+    form.append('nik', nik);
     form.append('birthDate', birthDate);
+    form.append('gender', gender);
     if (ktpFile) form.append('ktp', ktpFile);
     if (latitude  !== undefined) form.append('latitude',  String(latitude));
     if (longitude !== undefined) form.append('longitude', String(longitude));
@@ -53,4 +53,7 @@ export const authApi = {
     form.append('file', file);
     return apiClient.upload<AuthResponse>('/api/auth/me/photo', form, token);
   },
+
+  changePassword: (currentPassword: string, newPassword: string, token: string) =>
+    apiClient.put<{ message: string }>('/api/auth/me/password', { currentPassword, newPassword }, token),
 };

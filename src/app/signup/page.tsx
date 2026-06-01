@@ -1,6 +1,23 @@
+'use client';
+
 import Link from 'next/link';
-import { ChevronLeft, Users } from 'lucide-react';
-import SignupForm from '@/components/features/auth/SignupForm';
+import dynamic from 'next/dynamic';
+import { ChevronLeft, Users, Loader2 } from 'lucide-react';
+
+// SignupForm uses Tesseract.js (browser-only), React Hook Form, geolocation, and
+// Zustand — none of which are safe to SSR. Disable server rendering to prevent
+// hydration mismatches entirely.
+const SignupForm = dynamic(
+  () => import('@/components/features/auth/SignupForm'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 size={28} className="animate-spin text-orange-400" />
+      </div>
+    ),
+  },
+);
 
 export default function SignupPage() {
   return (
@@ -26,7 +43,7 @@ export default function SignupPage() {
         </div>
       </div>
 
-      {/* Form */}
+      {/* Form — rendered client-side only */}
       <div className="flex-1 bg-white rounded-t-3xl -mt-6 px-6 pt-8 pb-10">
         <SignupForm />
       </div>

@@ -1,5 +1,19 @@
-import { Users } from 'lucide-react';
-import LoginForm from '@/components/features/auth/LoginForm';
+'use client';
+
+import dynamic from 'next/dynamic';
+import { Users, Loader2 } from 'lucide-react';
+
+const LoginForm = dynamic(
+  () => import('@/components/features/auth/LoginForm'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 size={28} className="animate-spin text-blue-400" />
+      </div>
+    ),
+  },
+);
 
 export default function LoginPage() {
   return (
@@ -17,7 +31,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Form */}
+      {/* Form — rendered client-side only */}
       <div className="flex-1 bg-white rounded-t-3xl -mt-6 px-6 pt-8 pb-8">
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Selamat Datang</h2>

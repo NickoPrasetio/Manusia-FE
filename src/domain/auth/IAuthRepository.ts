@@ -6,8 +6,9 @@ export interface SignupInput {
   email:      string;
   password:   string;
   phone:      string;
-  userType:   string;
+  nik:        string;
   birthDate:  string;
+  gender:     string;
   ktpFile?:   File;
   latitude?:  number;
   longitude?: number;

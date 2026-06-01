@@ -12,6 +12,21 @@ export interface ReviewApiResponse {
   date: string;
 }
 
+export interface RatingDist {
+  star: number;
+  count: number;
+}
+
+export interface ReviewPage {
+  reviews: ReviewApiResponse[];
+  total: number;
+  avgRating: number;
+  dist: RatingDist[];
+  page: number;
+  limit: number;
+  last: boolean;
+}
+
 function toReview(r: ReviewApiResponse): Review {
   return {
     id:       r.id,
@@ -28,6 +43,12 @@ export const reviewApi = {
   getByWorker: async (workerId: string): Promise<Review[]> => {
     const data = await apiClient.get<ReviewApiResponse[]>(`/api/reviews/worker/${workerId}`);
     return data.map(toReview);
+  },
+
+  getByWorkerPage: async (workerId: string, page: number, limit = 10): Promise<ReviewPage> => {
+    return apiClient.get<ReviewPage>(
+      `/api/reviews/worker/${workerId}/page?page=${page}&limit=${limit}`,
+    );
   },
 
   createWithPhotos: async (

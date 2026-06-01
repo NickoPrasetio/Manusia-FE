@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogOut, User, Users } from 'lucide-react';
+import { LogOut, Settings, Users } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 export default function Navbar() {
@@ -38,7 +38,7 @@ export default function Navbar() {
               ? <img src={user.avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
               : (
                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                  <User size={16} className="text-blue-500" />
+                  <Settings size={16} className="text-blue-500" />
                 </div>
               )
             }
