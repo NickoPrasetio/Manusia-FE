@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import type { Resolver } from 'react-hook-form';
 import {
   CalendarDays,
   Clock,
@@ -25,7 +25,7 @@ const schema = z.object({
   city:          z.string().min(1,  'Pilih kota'),
   bookingDate:   z.string().min(1,  'Pilih tanggal'),
   startTime:     z.string().min(1,  'Pilih jam mulai'),
-  durationDays:  z.preprocess((v) => Number(v), z.number().min(1).max(30)),
+  durationDays:  z.coerce.number().min(1).max(30),
   paymentMethod: z.literal('CASH'),
   notes:         z.string().optional(),
 });
@@ -56,7 +56,7 @@ export default function BookingForm({ worker }: Props) {
     watch,
     formState: { errors },
   } = useForm<BookingFormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as Resolver<BookingFormValues>,
     defaultValues: {
       durationDays:  1,
       paymentMethod: 'CASH',
