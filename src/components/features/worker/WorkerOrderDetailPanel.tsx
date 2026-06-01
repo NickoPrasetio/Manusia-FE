@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Calendar, Clock, MapPin, Package, CheckCircle, XCircle, Loader2, User } from 'lucide-react';
+import { X, Calendar, Clock, MapPin, Package, CheckCircle, Loader2, User } from 'lucide-react';
 import { Booking, BookingStatus } from '@/types';
 import { useConfirmOrderMutation } from '@/hooks/useConfirmOrderMutation';
 import { useCompleteOrderMutation } from '@/hooks/useCompleteOrderMutation';
