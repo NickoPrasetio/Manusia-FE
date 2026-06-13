@@ -8,6 +8,7 @@ import {
   Users,
   Briefcase,
   Star,
+  Heart,
   ChevronRight,
   MapPin,
   HandHelping,
@@ -162,6 +163,28 @@ function MyReviewCard() {
   );
 }
 
+// ── "Ulasan yang Saya Berikan" card ──────────────────────────────────────────
+
+function MyGivenReviewCard() {
+  return (
+    <div className="px-4 mt-3">
+      <Link
+        href="/dashboard/my-given-reviews"
+        className="group flex items-center gap-4 bg-gradient-to-r from-purple-500 to-violet-500 rounded-2xl px-4 py-4 shadow-md shadow-purple-100 hover:shadow-lg hover:shadow-purple-200 active:scale-[0.98] transition-all"
+      >
+        <div className="w-10 h-10 rounded-xl bg-white/25 flex items-center justify-center shrink-0">
+          <Heart size={20} className="text-white fill-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-white font-bold text-sm leading-tight">Ulasan yang Saya Berikan</p>
+          <p className="text-white/80 text-xs mt-0.5">Riwayat ulasan yang kamu tulis</p>
+        </div>
+        <ChevronRight size={18} className="text-white/70 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+      </Link>
+    </div>
+  );
+}
+
 // ── Action grid ───────────────────────────────────────────────────────────────
 
 function ActionGrid({ onPostJob }: { onPostJob: () => void }) {
@@ -256,6 +279,7 @@ export default function DashboardContent() {
       <Hero />
       <StatusToggle />
       <MyReviewCard />
+      <MyGivenReviewCard />
       <ActionGrid onPostJob={() => setPostJobOpen(true)} />
       <PlatformStats />
 

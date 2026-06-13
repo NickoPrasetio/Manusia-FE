@@ -1,5 +1,6 @@
 import { Booking } from '@/types';
 import { CreateBookingPayload } from '@/lib/api/booking.api';
+import { ApplyToJobInput } from './usecases/ApplyToJobUseCase';
 
 export interface GetOpenNearbyInput {
   lat:      number;
@@ -16,4 +17,5 @@ export interface IBookingRepository {
   confirm(id: string, token: string): Promise<Booking>;
   complete(id: string, token: string): Promise<Booking>;
   cancel(id: string, token: string): Promise<Booking>;
+  applyToJob(input: ApplyToJobInput, token: string): Promise<Booking>;
 }

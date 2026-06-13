@@ -1,13 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft, MapPin, Calendar, Clock, Briefcase, Navigation,
-  CheckSquare, User, Loader2, AlertCircle, ChevronRight,
+  CheckSquare, User, Loader2, AlertCircle, HandHelping,
 } from 'lucide-react';
 import AuthGuard from '@/components/providers/AuthGuard';
 import { useAuthStore } from '@/store/authStore';
 import { useJobDetail } from '@/hooks/useJobDetail';
+import { useApplyToJob } from '@/hooks/useApplyToJob';
 import { JobCategory } from '@/types';
 
 // ── Config ────────────────────────────────────────────────────────────────────
@@ -59,9 +61,19 @@ function JobDetailContent() {
 
   const id = params.id as string;
   const { job, isLoading: loading, error, refetch } = useJobDetail(id);
+  const applyMutation = useApplyToJob();
+
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [applyDone,   setApplyDone]   = useState(false);
 
   const isOwner = job?.customerId === user?.id;
   const meta    = job ? CATEGORY_META[job.category] : null;
+
+  async function handleApply() {
+    await applyMutation.mutateAsync(id);
+    setShowConfirm(false);
+    setApplyDone(true);
+  }
 
   return (
     <main className="flex flex-col min-h-dvh bg-[#f0f4f8]">
@@ -212,17 +224,24 @@ function JobDetailContent() {
             </div>
           )}
 
-          {/* CTA — dalam flow konten, lebar sama dengan card lain */}
-          {!isOwner && job.status === 'OPEN' && (
+          {/* CTA */}
+          {!isOwner && job.status === 'OPEN' && !applyDone && (
             <button
-              onClick={() => router.push('/dashboard/workers')}
+              onClick={() => setShowConfirm(true)}
               className="w-full py-4 bg-blue-500 hover:bg-blue-600 active:scale-[0.98]
                          text-white font-bold rounded-2xl transition-all
                          flex items-center justify-center gap-2 shadow-md shadow-blue-200"
             >
+              <HandHelping size={18} />
               Tawarkan Diri
-              <ChevronRight size={18} />
             </button>
+          )}
+          {!isOwner && job.status === 'OPEN' && applyDone && (
+            <div className="w-full py-4 bg-green-50 border border-green-200 rounded-2xl
+                            flex flex-col items-center gap-1">
+              <p className="text-green-700 font-bold text-sm">✅ Penawaran Terkirim!</p>
+              <p className="text-green-600 text-xs">Pemberi kerja akan menerima permintaanmu</p>
+            </div>
           )}
           {isOwner && (
             <div className="w-full py-3.5 bg-gray-100 text-gray-500 font-semibold
@@ -237,6 +256,74 @@ function JobDetailContent() {
             </div>
           )}
         </div>
+      )}
+
+      {/* Confirmation bottom sheet */}
+      {showConfirm && job && (
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={() => setShowConfirm(false)}
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+          />
+          {/* Sheet */}
+          <div className="fixed inset-x-0 bottom-0 z-50 max-w-lg mx-auto
+                          bg-white rounded-t-3xl px-5 pt-4 pb-8 shadow-2xl">
+            <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-4" />
+
+            {/* Icon */}
+            <div className="flex flex-col items-center gap-2 mb-5">
+              <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center">
+                <HandHelping size={26} className="text-blue-500" />
+              </div>
+              <h2 className="text-base font-bold text-gray-900">Tawarkan Diri</h2>
+              <p className="text-xs text-gray-400 text-center max-w-[260px] leading-relaxed">
+                Kamu akan mengirim penawaran ke <span className="font-semibold text-gray-700">{job.customerName}</span> untuk pekerjaan ini.
+                Mereka akan melihatnya di My Orders.
+              </p>
+            </div>
+
+            {/* Job summary */}
+            <div className="bg-gray-50 rounded-2xl px-4 py-3 mb-5 space-y-1">
+              <p className="text-sm font-bold text-gray-900 truncate">{job.title}</p>
+              <p className="text-xs text-gray-400">{job.city} · {job.durationDays} hari</p>
+              <p className="text-sm font-bold text-blue-600">
+                Rp {(job.budgetPerDay * job.durationDays).toLocaleString('id-ID')}
+              </p>
+            </div>
+
+            {/* Error */}
+            {applyMutation.isError && (
+              <div className="mb-4 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
+                <p className="text-xs text-red-600">
+                  {(applyMutation.error as Error)?.message || 'Gagal mengirim penawaran'}
+                </p>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 py-3.5 border border-gray-200 text-gray-600 font-semibold
+                           rounded-2xl hover:bg-gray-50 transition-colors text-sm"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleApply}
+                disabled={applyMutation.isPending}
+                className="flex-1 py-3.5 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300
+                           text-white font-bold rounded-2xl transition-colors text-sm
+                           flex items-center justify-center gap-2"
+              >
+                {applyMutation.isPending
+                  ? <><Loader2 size={16} className="animate-spin" /> Mengirim...</>
+                  : 'Kirim Penawaran'}
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </main>
   );

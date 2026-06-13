@@ -19,7 +19,9 @@ export interface Booking {
   durationDays: number;
   paymentMethod: PaymentMethod;
   status: BookingStatus;
-  notes?: string;
+  notes?:    string;
+  jobId?:    string;
+  jobTitle?: string;
   createdAt: string;
 }
 

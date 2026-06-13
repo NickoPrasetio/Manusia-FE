@@ -47,4 +47,13 @@ export const bookingApi = {
       `/api/bookings/open-nearby?lat=${lat}&lon=${lon}&radius=${radiusKm}`,
       token,
     ),
+
+  applyToJob: (
+    jobId:        string,
+    workerName:   string,
+    workerAvatar: string,
+    notes:        string,
+    token:        string,
+  ) =>
+    apiClient.post<Booking>(`/api/jobs/${jobId}/apply`, { workerName, workerAvatar, notes }, token),
 };

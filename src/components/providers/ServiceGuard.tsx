@@ -106,12 +106,12 @@ function ServiceDownScreen({
           />
           <StatusRow
             label="Auth Service"
-            url="auth-service:8081"
+            url="localhost:8081"
             status="unknown"
           />
           <StatusRow
             label="Database"
-            url="postgres:5432"
+            url="localhost:5432"
             status="unknown"
           />
         </div>

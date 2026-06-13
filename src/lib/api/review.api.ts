@@ -27,6 +27,14 @@ export interface ReviewPage {
   last: boolean;
 }
 
+export interface GivenReviewPage {
+  reviews: ReviewApiResponse[];
+  total: number;
+  page: number;
+  limit: number;
+  last: boolean;
+}
+
 function toReview(r: ReviewApiResponse): Review {
   return {
     id:       r.id,
@@ -48,6 +56,12 @@ export const reviewApi = {
   getByWorkerPage: async (workerId: string, page: number, limit = 10): Promise<ReviewPage> => {
     return apiClient.get<ReviewPage>(
       `/api/reviews/worker/${workerId}/page?page=${page}&limit=${limit}`,
+    );
+  },
+
+  getGivenByUserPage: async (userId: string, page: number, limit = 10): Promise<GivenReviewPage> => {
+    return apiClient.get<GivenReviewPage>(
+      `/api/reviews/given/${userId}/page?page=${page}&limit=${limit}`,
     );
   },
 

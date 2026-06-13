@@ -1,6 +1,7 @@
 import { Booking } from '@/types';
 import { IBookingRepository, GetOpenNearbyInput } from '@/domain/booking/IBookingRepository';
 import { bookingApi, CreateBookingPayload } from '@/lib/api/booking.api';
+import { ApplyToJobInput } from '@/domain/booking/usecases/ApplyToJobUseCase';
 
 export class BookingRepository implements IBookingRepository {
   create(payload: CreateBookingPayload, token: string): Promise<Booking> {
@@ -33,5 +34,15 @@ export class BookingRepository implements IBookingRepository {
 
   cancel(id: string, token: string): Promise<Booking> {
     return bookingApi.cancelOrder(id, token);
+  }
+
+  applyToJob(input: ApplyToJobInput, token: string): Promise<Booking> {
+    return bookingApi.applyToJob(
+      input.jobId,
+      input.workerName,
+      input.workerAvatar,
+      input.notes ?? '',
+      token,
+    );
   }
 }
