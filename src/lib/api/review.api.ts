@@ -10,6 +10,8 @@ export interface ReviewApiResponse {
   comment: string;
   photos?: string[];
   date: string;
+  editCount: number;
+  createdAt: string;
 }
 
 export interface RatingDist {
@@ -37,13 +39,15 @@ export interface GivenReviewPage {
 
 function toReview(r: ReviewApiResponse): Review {
   return {
-    id:       r.id,
-    userId:   r.userId ?? '',
-    userName: r.userName,
-    rating:   r.rating,
-    comment:  r.comment,
-    photos:   r.photos ?? [],
-    date:     r.date,
+    id:        r.id,
+    userId:    r.userId ?? '',
+    userName:  r.userName,
+    rating:    r.rating,
+    comment:   r.comment,
+    photos:    r.photos ?? [],
+    date:      r.date,
+    editCount: r.editCount ?? 0,
+    createdAt: r.createdAt ?? '',
   };
 }
 
@@ -57,6 +61,15 @@ export const reviewApi = {
     return apiClient.get<ReviewPage>(
       `/api/reviews/worker/${workerId}/page?page=${page}&limit=${limit}`,
     );
+  },
+
+  edit: async (id: string, rating: number, comment: string, token: string, photos: File[] = []): Promise<Review> => {
+    const form = new FormData();
+    form.append('rating',  String(rating));
+    form.append('comment', comment);
+    photos.forEach((p) => form.append('photos', p));
+    const data = await apiClient.uploadPatch<ReviewApiResponse>(`/api/reviews/${id}`, form, token);
+    return toReview(data);
   },
 
   getGivenByUserPage: async (userId: string, page: number, limit = 10): Promise<GivenReviewPage> => {

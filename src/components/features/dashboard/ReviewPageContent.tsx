@@ -4,13 +4,14 @@ import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Camera, Star, Trash2, Loader2,
-  CheckCircle2, AlertCircle, ImagePlus,
+  CheckCircle2, AlertCircle, ImagePlus, AlertTriangle,
 } from 'lucide-react';
 import { useSubmitOrderReviewMutation } from '@/hooks/useSubmitOrderReviewMutation';
 import { useCustomerOrdersQuery } from '@/hooks/useCustomerOrdersQuery';
-
-const MAX_PHOTOS     = 5;
-const MAX_SIZE_BYTES = 50 * 1024 * 1024;
+import {
+  validatePhoto, photoErrorMessage,
+  PHOTO_RULES, PhotoErrorKind,
+} from '@/domain/review/PhotoValidation';
 
 const RATING_LABELS: Record<number, string> = {
   1: 'Sangat Buruk',
@@ -23,7 +24,8 @@ const RATING_LABELS: Record<number, string> = {
 interface PhotoItem {
   file:    File;
   preview: string;
-  error?:  string;
+  error?:  PhotoErrorKind;
+  warn?:   boolean;
 }
 
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
@@ -57,9 +59,10 @@ export default function ReviewPageContent({ bookingId }: { bookingId: string }) 
   const { data: orders, isLoading, isError } = useCustomerOrdersQuery();
   const booking = orders?.find((o) => o.id === bookingId);
 
-  const [rating,  setRating]  = useState(0);
-  const [comment, setComment] = useState('');
-  const [photos,  setPhotos]  = useState<PhotoItem[]>([]);
+  const [rating,   setRating]   = useState(0);
+  const [comment,  setComment]  = useState('');
+  const [photos,   setPhotos]   = useState<PhotoItem[]>([]);
+  const [sizeWarn, setSizeWarn] = useState<string[]>([]);
 
   const fileInputRef   = useRef<HTMLInputElement>(null);
   const submitMutation = useSubmitOrderReviewMutation();
@@ -67,12 +70,16 @@ export default function ReviewPageContent({ bookingId }: { bookingId: string }) 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
-    const remaining = MAX_PHOTOS - photos.length;
+    const remaining = PHOTO_RULES.maxCount - photos.length;
+    const warnNames: string[] = [];
     const toAdd = files.slice(0, remaining).map<PhotoItem>((file) => {
-      if (file.size > MAX_SIZE_BYTES) return { file, preview: '', error: `${file.name} melebihi 50 MB` };
-      return { file, preview: URL.createObjectURL(file) };
+      const result = validatePhoto(file);
+      if (!result.valid) return { file, preview: '', error: result.error };
+      if (result.warn) warnNames.push(file.name);
+      return { file, preview: URL.createObjectURL(file), warn: result.warn };
     });
     setPhotos((prev) => [...prev, ...toAdd]);
+    if (warnNames.length) setSizeWarn(warnNames);
     e.target.value = '';
   }
 
@@ -206,13 +213,42 @@ export default function ReviewPageContent({ bookingId }: { bookingId: string }) 
           />
         </div>
 
+        {/* Size warning popup */}
+        {sizeWarn.length > 0 && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-black/40 backdrop-blur-sm">
+            <div className="w-full max-w-xs bg-white rounded-3xl shadow-2xl p-6 flex flex-col items-center gap-4 text-center">
+              <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center">
+                <AlertTriangle size={28} className="text-amber-500" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-gray-900">Ukuran Foto Besar</h3>
+                <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
+                  {sizeWarn.length === 1
+                    ? `"${sizeWarn[0]}" berukuran lebih dari 5 MB.`
+                    : `${sizeWarn.length} foto berukuran lebih dari 5 MB.`
+                  }
+                  {' '}Foto tetap dapat diunggah, namun mungkin memerlukan waktu lebih lama.
+                </p>
+              </div>
+              <button
+                onClick={() => setSizeWarn([])}
+                className="w-full py-3 rounded-2xl font-bold text-sm text-white bg-amber-500 hover:bg-amber-400 transition-all active:scale-95"
+              >
+                Oke, Tetap Upload
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Photo upload */}
         <div className="flex flex-col gap-3 bg-white rounded-3xl border border-gray-100 shadow-sm px-4 py-5">
           <div className="flex items-center justify-between">
             <label className="text-sm font-semibold text-gray-700">
               Foto Hasil Kerja <span className="text-gray-400 font-normal">(opsional)</span>
             </label>
-            <span className="text-xs text-gray-400">{photos.length}/{MAX_PHOTOS} · max 50 MB</span>
+            <span className="text-xs text-gray-400">
+              {photos.length}/{PHOTO_RULES.maxCount} · JPG/PNG · maks 10 MB
+            </span>
           </div>
 
           {photos.length > 0 && (
@@ -223,10 +259,21 @@ export default function ReviewPageContent({ bookingId }: { bookingId: string }) 
                     ? (
                       <div className="w-full h-full flex flex-col items-center justify-center p-2 bg-red-50">
                         <AlertCircle size={20} className="text-red-400 mb-1" />
-                        <p className="text-[10px] text-red-500 text-center leading-tight">{item.error}</p>
+                        <p className="text-[10px] text-red-500 text-center leading-tight">
+                          {photoErrorMessage(item.error)}
+                        </p>
                       </div>
                     )
-                    : <img src={item.preview} alt={`foto-${idx + 1}`} className="w-full h-full object-cover" />
+                    : (
+                      <>
+                        <img src={item.preview} alt={`foto-${idx + 1}`} className="w-full h-full object-cover" />
+                        {item.warn && (
+                          <div className="absolute bottom-0 left-0 right-0 bg-amber-500/80 py-0.5 text-center">
+                            <span className="text-[9px] text-white font-semibold">{'>'} 5 MB</span>
+                          </div>
+                        )}
+                      </>
+                    )
                   }
                   <button
                     type="button" onClick={() => removePhoto(idx)}
@@ -236,7 +283,7 @@ export default function ReviewPageContent({ bookingId }: { bookingId: string }) 
                   </button>
                 </div>
               ))}
-              {photos.length < MAX_PHOTOS && (
+              {photos.length < PHOTO_RULES.maxCount && (
                 <button
                   type="button" onClick={() => fileInputRef.current?.click()}
                   className="aspect-square rounded-2xl border-2 border-dashed border-blue-200 flex flex-col items-center justify-center gap-1 hover:border-blue-400 hover:bg-blue-50 transition-colors"
@@ -258,17 +305,23 @@ export default function ReviewPageContent({ bookingId }: { bookingId: string }) 
               </div>
               <div className="text-left">
                 <p className="text-sm font-semibold text-gray-700">Upload Foto</p>
-                <p className="text-xs text-gray-400">Max {MAX_PHOTOS} foto · Maks. 50 MB per foto</p>
+                <p className="text-xs text-gray-400">
+                  Maks {PHOTO_RULES.maxCount} foto · JPG, JPEG, PNG · maks 10 MB
+                </p>
               </div>
             </button>
           )}
 
-          <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
+          <input
+            ref={fileInputRef} type="file" multiple className="hidden"
+            accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+            onChange={handleFileChange}
+          />
 
           {hasPhotoErr && (
             <div className="flex items-start gap-2 bg-red-50 rounded-2xl px-3 py-2">
               <AlertCircle size={14} className="text-red-400 shrink-0 mt-0.5" />
-              <p className="text-xs text-red-500">Hapus foto yang melebihi batas ukuran sebelum melanjutkan.</p>
+              <p className="text-xs text-red-500">Hapus foto bermasalah sebelum melanjutkan.</p>
             </div>
           )}
         </div>

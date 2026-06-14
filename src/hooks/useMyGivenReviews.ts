@@ -3,7 +3,11 @@
 import { useMemo } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/authStore';
-import { reviewApi, ReviewApiResponse } from '@/lib/api/review.api';
+import { ReviewRepository } from '@/data/review/ReviewRepository';
+import { GetMyGivenReviewsUseCase } from '@/domain/review/usecases/GetMyGivenReviewsUseCase';
+import { GivenReviewPage } from '@/lib/api/review.api';
+
+const useCase = new GetMyGivenReviewsUseCase(new ReviewRepository());
 
 const LIMIT = 10;
 
@@ -12,15 +16,15 @@ export function useMyGivenReviews() {
 
   const query = useInfiniteQuery({
     queryKey:         ['my-given-reviews', user?.id],
-    queryFn:          ({ pageParam }) => reviewApi.getGivenByUserPage(user!.id, pageParam as number, LIMIT),
+    queryFn:          ({ pageParam }) => useCase.execute(user!.id, pageParam as number, LIMIT),
     initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.last ? undefined : lastPage.page + 1,
+    getNextPageParam: (lastPage: GivenReviewPage) => lastPage.last ? undefined : lastPage.page + 1,
     enabled:          !!user?.id,
   });
 
   const reviews = useMemo(() => {
     const seen = new Set<string>();
-    return (query.data?.pages.flatMap((p) => p.reviews) ?? []).filter((r: ReviewApiResponse) => {
+    return (query.data?.pages.flatMap((p) => p.reviews) ?? []).filter((r) => {
       if (seen.has(r.id)) return false;
       seen.add(r.id);
       return true;

@@ -44,6 +44,8 @@ export interface Review {
   comment: string;
   photos?: string[];
   date: string;
+  editCount: number;
+  createdAt: string;
 }
 
 export interface Worker {

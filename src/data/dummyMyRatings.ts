@@ -14,6 +14,8 @@ export const dummyMyRatings: Review[] = [
       'Sangat puas dengan hasilnya! Pengerjaan rapi, tepat waktu, dan bersih. Tidak perlu banyak arahan, sudah tahu apa yang harus dilakukan. Pasti akan pakai jasa ini lagi.',
     photos: [p('cat1'), p('cat2'), p('cat3')],
     date: '2026-05-20T10:30:00Z',
+    editCount: 0,
+    createdAt: '2026-05-20T10:30:00Z',
   },
   {
     id: 'rev-002',
@@ -24,6 +26,8 @@ export const dummyMyRatings: Review[] = [
       'Kerja cepat dan hasil memuaskan. Kamar mandi sekarang jadi kinclong lagi. Terima kasih banyak!',
     photos: [p('bathroom1'), p('bathroom2')],
     date: '2026-05-18T14:00:00Z',
+    editCount: 0,
+    createdAt: '2026-05-18T14:00:00Z',
   },
   {
     id: 'rev-003',
@@ -33,6 +37,8 @@ export const dummyMyRatings: Review[] = [
     comment:
       'Hasil pekerjaan bagus dan memuaskan. Hanya sedikit telat dari jadwal awal, tapi komunikasi lancar dan hasilnya tidak mengecewakan.',
     date: '2026-05-15T09:00:00Z',
+    editCount: 0,
+    createdAt: '2026-05-15T09:00:00Z',
   },
   {
     id: 'rev-004',
@@ -43,6 +49,8 @@ export const dummyMyRatings: Review[] = [
       'Profesional banget! Datang tepat waktu, bawa alat sendiri, dan pengerjaannya sangat rapi. Harga juga sangat sepadan.',
     photos: [p('house1'), p('house2'), p('house3'), p('house4')],
     date: '2026-05-12T11:45:00Z',
+    editCount: 0,
+    createdAt: '2026-05-12T11:45:00Z',
   },
   {
     id: 'rev-005',
@@ -52,6 +60,8 @@ export const dummyMyRatings: Review[] = [
     comment:
       'Hasilnya lumayan, tapi ada beberapa bagian yang perlu diperbaiki ulang. Komunikasi kurang responsif, tapi akhirnya selesai dengan baik.',
     date: '2026-05-10T16:20:00Z',
+    editCount: 0,
+    createdAt: '2026-05-10T16:20:00Z',
   },
   {
     id: 'rev-006',
@@ -62,6 +72,8 @@ export const dummyMyRatings: Review[] = [
       'Luar biasa! Pagar besinya kokoh dan desainnya persis seperti yang saya minta. Sangat detail dan teliti dalam bekerja.',
     photos: [p('fence1'), p('fence2')],
     date: '2026-05-08T08:30:00Z',
+    editCount: 0,
+    createdAt: '2026-05-08T08:30:00Z',
   },
   {
     id: 'rev-007',
@@ -72,6 +84,8 @@ export const dummyMyRatings: Review[] = [
       'Kerja bagus, bersih, dan tidak banyak bicara yang tidak perlu. Saya suka cara kerjanya yang fokus. Sedikit lebih lama dari estimasi, tapi hasil akhirnya memuaskan.',
     photos: [p('tile1')],
     date: '2026-05-05T13:00:00Z',
+    editCount: 0,
+    createdAt: '2026-05-05T13:00:00Z',
   },
   {
     id: 'rev-008',
@@ -82,6 +96,8 @@ export const dummyMyRatings: Review[] = [
       'Hasil pekerjaan di bawah ekspektasi. Cat tidak rata di beberapa bagian dinding dan harus diperbaiki ulang. Semoga ke depannya lebih teliti.',
     photos: [p('wall1'), p('wall2')],
     date: '2026-05-02T10:15:00Z',
+    editCount: 0,
+    createdAt: '2026-05-02T10:15:00Z',
   },
   {
     id: 'rev-009',
@@ -92,6 +108,8 @@ export const dummyMyRatings: Review[] = [
       'Sangat rekomendasikan! Plafon PVC terpasang dengan rapi dan bersih. Sampah bekas bongkaran juga langsung dirapikan. Pelayanan prima!',
     photos: [p('ceiling1'), p('ceiling2'), p('ceiling3')],
     date: '2026-04-28T15:30:00Z',
+    editCount: 0,
+    createdAt: '2026-04-28T15:30:00Z',
   },
   {
     id: 'rev-010',
@@ -101,6 +119,8 @@ export const dummyMyRatings: Review[] = [
     comment:
       'Instalasi AC berjalan lancar, tidak ada kebocoran freon, dan pendingin bekerja dengan baik. Hanya ada beberapa kabel yang kurang rapi.',
     date: '2026-04-25T09:45:00Z',
+    editCount: 0,
+    createdAt: '2026-04-25T09:45:00Z',
   },
   {
     id: 'rev-011',
@@ -111,6 +131,8 @@ export const dummyMyRatings: Review[] = [
       'Masalah pipa bocor selesai dalam hitungan jam! Cepat, bersih, dan tukangnya sangat ramah. Harga juga sangat wajar.',
     photos: [p('pipe1')],
     date: '2026-04-22T11:00:00Z',
+    editCount: 0,
+    createdAt: '2026-04-22T11:00:00Z',
   },
   {
     id: 'rev-012',
@@ -120,6 +142,8 @@ export const dummyMyRatings: Review[] = [
     comment:
       'Hasil pemasangan keramik oke, tapi nat-nya kurang rata di beberapa sudut. Perlu sedikit sentuhan akhir lagi.',
     date: '2026-04-18T14:30:00Z',
+    editCount: 0,
+    createdAt: '2026-04-18T14:30:00Z',
   },
   {
     id: 'rev-013',
@@ -130,6 +154,8 @@ export const dummyMyRatings: Review[] = [
       'Taman saya jadi cantik lagi! Pemangkasan dilakukan dengan sangat rapi dan penanaman ulang tanamannya berhasil. Terima kasih!',
     photos: [p('garden1'), p('garden2')],
     date: '2026-04-15T08:00:00Z',
+    editCount: 0,
+    createdAt: '2026-04-15T08:00:00Z',
   },
   {
     id: 'rev-014',
@@ -140,6 +166,8 @@ export const dummyMyRatings: Review[] = [
       'Kecewa dengan hasil pekerjaan. Atap masih bocor setelah dikerjakan dan tidak ada follow-up sama sekali ketika saya komplain.',
     photos: [p('roof1')],
     date: '2026-04-10T17:00:00Z',
+    editCount: 0,
+    createdAt: '2026-04-10T17:00:00Z',
   },
   {
     id: 'rev-015',
@@ -149,5 +177,7 @@ export const dummyMyRatings: Review[] = [
     comment:
       'Pekerjaan selesai tepat waktu dan hasilnya bagus. Tukangnya sopan dan tidak meninggalkan sampah. Sedikit minor di finishing tapi secara keseluruhan puas.',
     date: '2026-04-07T10:00:00Z',
+    editCount: 0,
+    createdAt: '2026-04-07T10:00:00Z',
   },
 ];

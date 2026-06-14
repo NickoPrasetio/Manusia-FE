@@ -39,4 +39,7 @@ export const apiClient = {
 
   upload: <T>(path: string, formData: FormData, token?: string) =>
     request<T>(path, { method: 'POST', body: formData, token }),
+
+  uploadPatch: <T>(path: string, formData: FormData, token?: string) =>
+    request<T>(path, { method: 'PATCH', body: formData, token }),
 };
